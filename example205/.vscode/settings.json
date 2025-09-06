@@ -21,6 +21,8 @@
     "sdkconfig.h": "c",
     "esp_flash.h": "c",
     "inttypes.h": "c",
-    "gpio.h": "c"
-  }
+    "gpio.h": "c",
+    "task.h": "c"
+  },
+  "C_Cpp.errorSquiggles": "disabled"
 }

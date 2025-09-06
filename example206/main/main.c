@@ -32,7 +32,7 @@ void Blinky_Task(void * arg) {
 
   // Tạo handle cho LED strip
   led_strip_handle_t led_strip;
-  ESP_ERROR_CHECK(led_strip_new_rmt_device( & strip_config, & rmt_config, & led_strip));
+  led_strip_new_rmt_device( & strip_config, & rmt_config, & led_strip);
 
   int count_second = 0;
 
