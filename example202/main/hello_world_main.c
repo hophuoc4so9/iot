@@ -1,15 +1,18 @@
-#include <stdio.h>
-#include <inttypes.h>
-#include "sdkconfig.h"
-#include "freertos/FreeRTOS.h"
-#include "freertos/task.h"
-#include "esp_chip_info.h"
-#include "esp_flash.h"
+#include <Arduino.h>
 
-void app_main(void)
-{
-printf("Hello world!\n");
-printf("Restarting now.\n");
-fflush(stdout);
-esp_restart();
+#define LED_PIN 21
+
+void setup() {
+  Serial.begin(115200);
+  pinMode(LED_PIN, OUTPUT);
+  Serial.println("ESP32 started!");
+}
+
+void loop() {
+  digitalWrite(LED_PIN, HIGH);
+  Serial.println("LED ON");
+  delay(500);
+  digitalWrite(LED_PIN, LOW);
+  Serial.println("LED OFF");
+  delay(500);
 }
