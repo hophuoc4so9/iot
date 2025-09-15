@@ -1,0 +1,2 @@
+source D:/iot-projects/hello_world/build/gdbinit/symbols
+source D:/iot-projects/hello_world/build/gdbinit/connect

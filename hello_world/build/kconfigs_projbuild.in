@@ -1,0 +1,8 @@
+source "D:/Users/hophu/esp/v5.5.1/esp-idf/components/bootloader/Kconfig.projbuild"
+source "D:/Users/hophu/esp/v5.5.1/esp-idf/components/esp_app_format/Kconfig.projbuild"
+source "D:/Users/hophu/esp/v5.5.1/esp-idf/components/esp_rom/Kconfig.projbuild"
+source "D:/Users/hophu/esp/v5.5.1/esp-idf/components/esptool_py/Kconfig.projbuild"
+source "D:/Users/hophu/esp/v5.5.1/esp-idf/components/partition_table/Kconfig.projbuild"
+source "D:/iot-projects/hello_world/managed_components/espressif__arduino-esp32/Kconfig.projbuild"
+source "D:/iot-projects/hello_world/managed_components/espressif__esp-sr/Kconfig.projbuild"
+source "D:/iot-projects/hello_world/managed_components/espressif__esp_rainmaker/Kconfig.projbuild"

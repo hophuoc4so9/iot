@@ -1,0 +1,88 @@
+Command: cmake -G Ninja -DPYTHON_DEPS_CHECKED=1 -DPYTHON=d:\Users\hophu\.espressif\python_env\idf5.5_py3.11_env\Scripts\python.exe -DESP_PLATFORM=1 -DIDF_TARGET=esp32s3 -DCCACHE_ENABLE=0 D:\iot-projects\hello_world
+-- Existing sdkconfig 'D:/iot-projects/hello_world/sdkconfig' renamed to 'D:/iot-projects/hello_world/sdkconfig.old'.
+-- Found Git: D:/Users/hophu/.espressif/tools/idf-git/2.39.2/cmd/git.exe (found version "2.39.2.windows.1")
+-- Minimal build - ON
+-- The C compiler identification is GNU 14.2.0
+-- The CXX compiler identification is GNU 14.2.0
+-- The ASM compiler identification is GNU
+-- Found assembler: D:/Users/hophu/.espressif/tools/xtensa-esp-elf/esp-14.2.0_20241119/xtensa-esp-elf/bin/xtensa-esp32s3-elf-gcc.exe
+-- Detecting C compiler ABI info
+-- Detecting C compiler ABI info - done
+-- Check for working C compiler: D:/Users/hophu/.espressif/tools/xtensa-esp-elf/esp-14.2.0_20241119/xtensa-esp-elf/bin/xtensa-esp32s3-elf-gcc.exe - skipped
+-- Detecting C compile features
+-- Detecting C compile features - done
+-- Detecting CXX compiler ABI info
+-- Detecting CXX compiler ABI info - done
+-- Check for working CXX compiler: D:/Users/hophu/.espressif/tools/xtensa-esp-elf/esp-14.2.0_20241119/xtensa-esp-elf/bin/xtensa-esp32s3-elf-g++.exe - skipped
+-- Detecting CXX compile features
+-- Detecting CXX compile features - done
+-- Building ESP-IDF components for target esp32s3
+NOTICE: Optional dependency "espressif/esp-sr" of "espressif/arduino-esp32 (3.3.0~1)" is not present in the lock file, solving dependencies.
+.NOTICE: Skipping optional dependency: espressif/esp_hosted
+NOTICE: Skipping optional dependency: espressif/esp_wifi_remote
+............................................NOTICE: Updating lock file at D:\iot-projects\hello_world\dependencies.lock
+NOTICE: Processing 27 dependencies:
+NOTICE: [1/27] chmorgan/esp-libhelix-mp3 (1.0.3)
+NOTICE: [2/27] espressif/arduino-esp32 (3.3.0~1)
+NOTICE: [3/27] espressif/cbor (0.6.0~1)
+NOTICE: [4/27] espressif/esp-dsp (1.4.12)
+NOTICE: [5/27] espressif/esp-modbus (1.0.18)
+NOTICE: [6/27] espressif/esp-serial-flasher (0.0.11)
+NOTICE: [7/27] espressif/esp-sr (1.9.5)
+NOTICE: [8/27] espressif/esp-zboss-lib (1.6.4)
+NOTICE: [9/27] espressif/esp-zigbee-lib (1.6.5)
+NOTICE: [10/27] espressif/esp_diag_data_store (1.0.2)
+NOTICE: [11/27] espressif/esp_diagnostics (1.2.1)
+NOTICE: [12/27] espressif/esp_insights (1.2.2)
+NOTICE: [13/27] espressif/esp_modem (1.4.0)
+NOTICE: [14/27] espressif/esp_rainmaker (1.5.2)
+NOTICE: [15/27] espressif/esp_rcp_update (1.2.0)
+NOTICE: [16/27] espressif/esp_schedule (1.2.0)
+NOTICE: [17/27] espressif/esp_secure_cert_mgr (2.6.1)
+NOTICE: [18/27] espressif/jsmn (1.1.0)
+NOTICE: [19/27] espressif/json_generator (1.1.2)
+NOTICE: [20/27] espressif/json_parser (1.0.3)
+NOTICE: [21/27] espressif/libsodium (1.0.20~2)
+NOTICE: [22/27] espressif/mdns (1.8.2)
+NOTICE: [23/27] espressif/network_provisioning (1.0.2)
+NOTICE: [24/27] espressif/qrcode (0.1.0~2)
+NOTICE: [25/27] espressif/rmaker_common (1.4.6)
+NOTICE: [26/27] joltwallet/littlefs (1.20.1)
+NOTICE: [27/27] idf (5.5.1)
+-- DEBUG: Use esp-modbus component folder: D:/iot-projects/hello_world/managed_components/espressif__esp-modbus.
+NOTICE: Skipping optional dependency: espressif/esp_hosted
+NOTICE: Skipping optional dependency: espressif/esp_wifi_remote
+-- Project sdkconfig file D:/iot-projects/hello_world/sdkconfig
+Loading defaults file D:/iot-projects/hello_world/sdkconfig.defaults...
+-- Compiler supported targets: xtensa-esp-elf
+-- Found Python3: d:/Users/hophu/.espressif/python_env/idf5.5_py3.11_env/Scripts/python.exe (found version "3.11.2") found components: Interpreter
+-- Performing Test CMAKE_HAVE_LIBC_PTHREAD
+-- Performing Test CMAKE_HAVE_LIBC_PTHREAD - Success
+-- Found Threads: TRUE
+-- Performing Test C_COMPILER_SUPPORTS_WFORMAT_SIGNEDNESS
+-- Performing Test C_COMPILER_SUPPORTS_WFORMAT_SIGNEDNESS - Success
+-- USING O3
+-- App "main" version: dd77f7a
+-- Adding linker script D:/iot-projects/hello_world/build/esp-idf/esp_system/ld/memory.ld
+-- Adding linker script D:/iot-projects/hello_world/build/esp-idf/esp_system/ld/sections.ld.in
+-- Adding linker script D:/Users/hophu/esp/v5.5.1/esp-idf/components/esp_rom/esp32s3/ld/esp32s3.rom.ld
+-- Adding linker script D:/Users/hophu/esp/v5.5.1/esp-idf/components/esp_rom/esp32s3/ld/esp32s3.rom.api.ld
+-- Adding linker script D:/Users/hophu/esp/v5.5.1/esp-idf/components/esp_rom/esp32s3/ld/esp32s3.rom.bt_funcs.ld
+-- Adding linker script D:/Users/hophu/esp/v5.5.1/esp-idf/components/esp_rom/esp32s3/ld/esp32s3.rom.libgcc.ld
+-- Adding linker script D:/Users/hophu/esp/v5.5.1/esp-idf/components/esp_rom/esp32s3/ld/esp32s3.rom.wdt.ld
+-- Adding linker script D:/Users/hophu/esp/v5.5.1/esp-idf/components/esp_rom/esp32s3/ld/esp32s3.rom.version.ld
+-- Adding linker script D:/Users/hophu/esp/v5.5.1/esp-idf/components/esp_rom/esp32s3/ld/esp32s3.rom.ble_master.ld
+-- Adding linker script D:/Users/hophu/esp/v5.5.1/esp-idf/components/esp_rom/esp32s3/ld/esp32s3.rom.ble_50.ld
+-- Adding linker script D:/Users/hophu/esp/v5.5.1/esp-idf/components/esp_rom/esp32s3/ld/esp32s3.rom.ble_smp.ld
+-- Adding linker script D:/Users/hophu/esp/v5.5.1/esp-idf/components/esp_rom/esp32s3/ld/esp32s3.rom.ble_dtm.ld
+-- Adding linker script D:/Users/hophu/esp/v5.5.1/esp-idf/components/esp_rom/esp32s3/ld/esp32s3.rom.ble_test.ld
+-- Adding linker script D:/Users/hophu/esp/v5.5.1/esp-idf/components/esp_rom/esp32s3/ld/esp32s3.rom.ble_scan.ld
+-- Adding linker script D:/Users/hophu/esp/v5.5.1/esp-idf/components/esp_rom/esp32s3/ld/esp32s3.rom.libc.ld
+-- Adding linker script D:/Users/hophu/esp/v5.5.1/esp-idf/components/esp_rom/esp32s3/ld/esp32s3.rom.newlib.ld
+-- Adding linker script D:/Users/hophu/esp/v5.5.1/esp-idf/components/soc/esp32s3/ld/esp32s3.peripherals.ld
+-- DEBUG: Use esp-modbus component folder: D:/iot-projects/hello_world/managed_components/espressif__esp-modbus.
+-- Components: app_update bootloader bootloader_support bt chmorgan__esp-libhelix-mp3 console cxx driver efuse esp-tls esp_adc esp_app_format esp_bootloader_format esp_coex esp_common esp_driver_ana_cmpr esp_driver_bitscrambler esp_driver_dac esp_driver_gpio esp_driver_gptimer esp_driver_i2c esp_driver_i2s esp_driver_ledc esp_driver_mcpwm esp_driver_parlio esp_driver_pcnt esp_driver_rmt esp_driver_sdio esp_driver_sdm esp_driver_sdmmc esp_driver_sdspi esp_driver_spi esp_driver_tsens esp_driver_twai esp_driver_uart esp_driver_usb_serial_jtag esp_eth esp_event esp_gdbstub esp_hid esp_http_client esp_http_server esp_https_ota esp_https_server esp_hw_support esp_local_ctrl esp_mm esp_netif esp_netif_stack esp_partition esp_phy esp_pm esp_psram esp_ringbuf esp_rom esp_security esp_system esp_timer esp_vfs_console esp_wifi espcoredump espressif__arduino-esp32 espressif__cbor espressif__esp-dsp espressif__esp-modbus espressif__esp-serial-flasher espressif__esp-sr espressif__esp-zboss-lib espressif__esp-zigbee-lib espressif__esp_diag_data_store espressif__esp_diagnostics espressif__esp_insights espressif__esp_modem espressif__esp_rainmaker espressif__esp_rcp_update espressif__esp_schedule espressif__esp_secure_cert_mgr espressif__jsmn espressif__json_generator espressif__json_parser espressif__libsodium espressif__mdns espressif__network_provisioning espressif__qrcode espressif__rmaker_common esptool_py fatfs freertos hal heap http_parser ieee802154 joltwallet__littlefs json log lwip main mbedtls mqtt newlib nvs_flash openthread partition_table protobuf-c protocomm pthread sdmmc soc spi_flash spiffs tcp_transport usb vfs wear_levelling wifi_provisioning wpa_supplicant xtensa
+-- Component paths: D:/Users/hophu/esp/v5.5.1/esp-idf/components/app_update D:/Users/hophu/esp/v5.5.1/esp-idf/components/bootloader D:/Users/hophu/esp/v5.5.1/esp-idf/components/bootloader_support D:/Users/hophu/esp/v5.5.1/esp-idf/components/bt D:/iot-projects/hello_world/managed_components/chmorgan__esp-libhelix-mp3 D:/Users/hophu/esp/v5.5.1/esp-idf/components/console D:/Users/hophu/esp/v5.5.1/esp-idf/components/cxx D:/Users/hophu/esp/v5.5.1/esp-idf/components/driver D:/Users/hophu/esp/v5.5.1/esp-idf/components/efuse D:/Users/hophu/esp/v5.5.1/esp-idf/components/esp-tls D:/Users/hophu/esp/v5.5.1/esp-idf/components/esp_adc D:/Users/hophu/esp/v5.5.1/esp-idf/components/esp_app_format D:/Users/hophu/esp/v5.5.1/esp-idf/components/esp_bootloader_format D:/Users/hophu/esp/v5.5.1/esp-idf/components/esp_coex D:/Users/hophu/esp/v5.5.1/esp-idf/components/esp_common D:/Users/hophu/esp/v5.5.1/esp-idf/components/esp_driver_ana_cmpr D:/Users/hophu/esp/v5.5.1/esp-idf/components/esp_driver_bitscrambler D:/Users/hophu/esp/v5.5.1/esp-idf/components/esp_driver_dac D:/Users/hophu/esp/v5.5.1/esp-idf/components/esp_driver_gpio D:/Users/hophu/esp/v5.5.1/esp-idf/components/esp_driver_gptimer D:/Users/hophu/esp/v5.5.1/esp-idf/components/esp_driver_i2c D:/Users/hophu/esp/v5.5.1/esp-idf/components/esp_driver_i2s D:/Users/hophu/esp/v5.5.1/esp-idf/components/esp_driver_ledc D:/Users/hophu/esp/v5.5.1/esp-idf/components/esp_driver_mcpwm D:/Users/hophu/esp/v5.5.1/esp-idf/components/esp_driver_parlio D:/Users/hophu/esp/v5.5.1/esp-idf/components/esp_driver_pcnt D:/Users/hophu/esp/v5.5.1/esp-idf/components/esp_driver_rmt D:/Users/hophu/esp/v5.5.1/esp-idf/components/esp_driver_sdio D:/Users/hophu/esp/v5.5.1/esp-idf/components/esp_driver_sdm D:/Users/hophu/esp/v5.5.1/esp-idf/components/esp_driver_sdmmc D:/Users/hophu/esp/v5.5.1/esp-idf/components/esp_driver_sdspi D:/Users/hophu/esp/v5.5.1/esp-idf/components/esp_driver_spi D:/Users/hophu/esp/v5.5.1/esp-idf/components/esp_driver_tsens D:/Users/hophu/esp/v5.5.1/esp-idf/components/esp_driver_twai D:/Users/hophu/esp/v5.5.1/esp-idf/components/esp_driver_uart D:/Users/hophu/esp/v5.5.1/esp-idf/components/esp_driver_usb_serial_jtag D:/Users/hophu/esp/v5.5.1/esp-idf/components/esp_eth D:/Users/hophu/esp/v5.5.1/esp-idf/components/esp_event D:/Users/hophu/esp/v5.5.1/esp-idf/components/esp_gdbstub D:/Users/hophu/esp/v5.5.1/esp-idf/components/esp_hid D:/Users/hophu/esp/v5.5.1/esp-idf/components/esp_http_client D:/Users/hophu/esp/v5.5.1/esp-idf/components/esp_http_server D:/Users/hophu/esp/v5.5.1/esp-idf/components/esp_https_ota D:/Users/hophu/esp/v5.5.1/esp-idf/components/esp_https_server D:/Users/hophu/esp/v5.5.1/esp-idf/components/esp_hw_support D:/Users/hophu/esp/v5.5.1/esp-idf/components/esp_local_ctrl D:/Users/hophu/esp/v5.5.1/esp-idf/components/esp_mm D:/Users/hophu/esp/v5.5.1/esp-idf/components/esp_netif D:/Users/hophu/esp/v5.5.1/esp-idf/components/esp_netif_stack D:/Users/hophu/esp/v5.5.1/esp-idf/components/esp_partition D:/Users/hophu/esp/v5.5.1/esp-idf/components/esp_phy D:/Users/hophu/esp/v5.5.1/esp-idf/components/esp_pm D:/Users/hophu/esp/v5.5.1/esp-idf/components/esp_psram D:/Users/hophu/esp/v5.5.1/esp-idf/components/esp_ringbuf D:/Users/hophu/esp/v5.5.1/esp-idf/components/esp_rom D:/Users/hophu/esp/v5.5.1/esp-idf/components/esp_security D:/Users/hophu/esp/v5.5.1/esp-idf/components/esp_system D:/Users/hophu/esp/v5.5.1/esp-idf/components/esp_timer D:/Users/hophu/esp/v5.5.1/esp-idf/components/esp_vfs_console D:/Users/hophu/esp/v5.5.1/esp-idf/components/esp_wifi D:/Users/hophu/esp/v5.5.1/esp-idf/components/espcoredump D:/iot-projects/hello_world/managed_components/espressif__arduino-esp32 D:/iot-projects/hello_world/managed_components/espressif__cbor D:/iot-projects/hello_world/managed_components/espressif__esp-dsp D:/iot-projects/hello_world/managed_components/espressif__esp-modbus D:/iot-projects/hello_world/managed_components/espressif__esp-serial-flasher D:/iot-projects/hello_world/managed_components/espressif__esp-sr D:/iot-projects/hello_world/managed_components/espressif__esp-zboss-lib D:/iot-projects/hello_world/managed_components/espressif__esp-zigbee-lib D:/iot-projects/hello_world/managed_components/espressif__esp_diag_data_store D:/iot-projects/hello_world/managed_components/espressif__esp_diagnostics D:/iot-projects/hello_world/managed_components/espressif__esp_insights D:/iot-projects/hello_world/managed_components/espressif__esp_modem D:/iot-projects/hello_world/managed_components/espressif__esp_rainmaker D:/iot-projects/hello_world/managed_components/espressif__esp_rcp_update D:/iot-projects/hello_world/managed_components/espressif__esp_schedule D:/iot-projects/hello_world/managed_components/espressif__esp_secure_cert_mgr D:/iot-projects/hello_world/managed_components/espressif__jsmn D:/iot-projects/hello_world/managed_components/espressif__json_generator D:/iot-projects/hello_world/managed_components/espressif__json_parser D:/iot-projects/hello_world/managed_components/espressif__libsodium D:/iot-projects/hello_world/managed_components/espressif__mdns D:/iot-projects/hello_world/managed_components/espressif__network_provisioning D:/iot-projects/hello_world/managed_components/espressif__qrcode D:/iot-projects/hello_world/managed_components/espressif__rmaker_common D:/Users/hophu/esp/v5.5.1/esp-idf/components/esptool_py D:/Users/hophu/esp/v5.5.1/esp-idf/components/fatfs D:/Users/hophu/esp/v5.5.1/esp-idf/components/freertos D:/Users/hophu/esp/v5.5.1/esp-idf/components/hal D:/Users/hophu/esp/v5.5.1/esp-idf/components/heap D:/Users/hophu/esp/v5.5.1/esp-idf/components/http_parser D:/Users/hophu/esp/v5.5.1/esp-idf/components/ieee802154 D:/iot-projects/hello_world/managed_components/joltwallet__littlefs D:/Users/hophu/esp/v5.5.1/esp-idf/components/json D:/Users/hophu/esp/v5.5.1/esp-idf/components/log D:/Users/hophu/esp/v5.5.1/esp-idf/components/lwip D:/iot-projects/hello_world/main D:/Users/hophu/esp/v5.5.1/esp-idf/components/mbedtls D:/Users/hophu/esp/v5.5.1/esp-idf/components/mqtt D:/Users/hophu/esp/v5.5.1/esp-idf/components/newlib D:/Users/hophu/esp/v5.5.1/esp-idf/components/nvs_flash D:/Users/hophu/esp/v5.5.1/esp-idf/components/openthread D:/Users/hophu/esp/v5.5.1/esp-idf/components/partition_table D:/Users/hophu/esp/v5.5.1/esp-idf/components/protobuf-c D:/Users/hophu/esp/v5.5.1/esp-idf/components/protocomm D:/Users/hophu/esp/v5.5.1/esp-idf/components/pthread D:/Users/hophu/esp/v5.5.1/esp-idf/components/sdmmc D:/Users/hophu/esp/v5.5.1/esp-idf/components/soc D:/Users/hophu/esp/v5.5.1/esp-idf/components/spi_flash D:/Users/hophu/esp/v5.5.1/esp-idf/components/spiffs D:/Users/hophu/esp/v5.5.1/esp-idf/components/tcp_transport D:/Users/hophu/esp/v5.5.1/esp-idf/components/usb D:/Users/hophu/esp/v5.5.1/esp-idf/components/vfs D:/Users/hophu/esp/v5.5.1/esp-idf/components/wear_levelling D:/Users/hophu/esp/v5.5.1/esp-idf/components/wifi_provisioning D:/Users/hophu/esp/v5.5.1/esp-idf/components/wpa_supplicant D:/Users/hophu/esp/v5.5.1/esp-idf/components/xtensa
+-- Configuring done (56.5s)
+-- Generating done (12.1s)
+-- Build files have been written to: D:/iot-projects/hello_world/build
