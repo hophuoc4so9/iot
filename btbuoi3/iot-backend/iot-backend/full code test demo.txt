@@ -1,0 +1,77 @@
+code demo bài 1:
+.\mvnw.cmd  spring-boot:run
+code demo bài 2:
+
+docker run -it --rm --name mosquitto -p 1883:1883 eclipse-mosquitto mosquitto -c /mosquitto-no-auth.conf
+
+docker start -ai mosquitto
+python .\lab2gialapthietbi\publisher.py
+
+code test bài 3:
+postman
+
+code test bài 4:
+
+mysql
+SHOW iotdb;
+SELECT * FROM telemetry
+
+code test lab6:
+
+chạy redis: docker run -d --name redis -p 6379:6379 redis:latest
+
+# Lấy tất cả topics từ Redis
+curl "http://localhost:8080/api/mqtt/topics"
+
+# Subscribe vào topic
+curl -X POST http://localhost:8080/api/mqtt/subscribe \
+  -H "Content-Type: application/json" \
+  -d '{"topic":"iot/device/1/telemetry"}'
+
+# Xem messages từ Redis
+curl "http://localhost:8080/api/mqtt/recent?topic=iot/device/1/telemetry&limit=10"
+
+bài 9 sql
+
+
+use iotdb;
+
+-- Xoá bảng cũ nếu có
+DROP TABLE IF EXISTS telemetry2;
+
+-- Tạo bảng partition theo tháng
+CREATE TABLE telemetry2 (
+   id BIGINT AUTO_INCREMENT,
+   device_id BIGINT NOT NULL,
+   ts DATETIME NOT NULL,
+   data JSON,
+   PRIMARY KEY (id, ts)   -- PK phải include ts
+)
+PARTITION BY RANGE (TO_DAYS(ts)) (
+   PARTITION p2025_06 VALUES LESS THAN (TO_DAYS('2025-07-01')),
+   PARTITION p2025_07 VALUES LESS THAN (TO_DAYS('2025-08-01')),
+   PARTITION p2025_08 VALUES LESS THAN (TO_DAYS('2025-09-01')),
+   PARTITION p2025_09 VALUES LESS THAN (TO_DAYS('2025-10-01')),
+   PARTITION p2025_10 VALUES LESS THAN (TO_DAYS('2025-11-01')),
+   PARTITION pmax VALUES LESS THAN MAXVALUE
+);
+
+-- Thêm index để tối ưu query thường gặp
+CREATE INDEX idx_telemetry2_device_ts ON telemetry2 (device_id, ts);
+CREATE INDEX idx_telemetry2_ts ON telemetry2 (ts);
+
+-- Test insert dữ liệu mẫu
+INSERT INTO telemetry2 (device_id, ts, data) VALUES
+ (1, '2025-06-15 10:00:00', JSON_OBJECT('temp', 25, 'hum', 60)),
+ (1, '2025-07-20 12:00:00', JSON_OBJECT('temp', 30, 'hum', 55)),
+ (2, '2025-08-05 14:30:00', JSON_OBJECT('temp', 28, 'hum', 50)),
+ (2, '2025-09-10 16:45:00', JSON_OBJECT('temp', 32, 'hum', 70)),
+ (3, '2025-10-01 08:00:00', JSON_OBJECT('temp', 27, 'hum', 65));
+
+-- Truy vấn kiểm tra (chỉ lấy dữ liệu 7 ngày gần nhất)
+EXPLAIN ANALYZE
+SELECT id, device_id, ts, data
+FROM telemetry2
+WHERE ts BETWEEN NOW() - INTERVAL 7 DAY AND NOW();
+
+

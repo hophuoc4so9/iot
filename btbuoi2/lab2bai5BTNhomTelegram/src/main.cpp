@@ -2,18 +2,18 @@
 #include <HTTPClient.h>
 #include <UrlEncode.h>
 
-const char* ssid = "TDMU";
-const char* password = "";
+const char* ssid = "HO TUONG VSIP";
+const char* password = "111222333";
 
 // +international_country_code + phone number
 // Portugal +351, example: +351912345678
 String phoneNumber = "+84349146401";
-String apiKey = "hophuoc4so9";
+String apiKey = "025gaHiFjigsJH7z";
 
 void sendMessage(String message){
 
   // Data to send with HTTP POST
-    String url = "https://api.callmebot.com/text.php?user=" + apiKey + "&text=" + urlEncode(message);
+    String url = "https://api.callmebot.com/facebook/send.php?apikey=" + apiKey + "&text=" + urlEncode(message);
 
   HTTPClient http;
   http.begin(url); 
@@ -45,10 +45,10 @@ void setup() {
   Serial.println("");
   Serial.print("Connected to WiFi network with IP Address: ");
   Serial.println(WiFi.localIP());
-  
+  delay(10000);
   // Send Message to WhatsAPP
   sendMessage("Hello from ESP32!");
-  delay(10000);
+   
 }
 
 void loop() {

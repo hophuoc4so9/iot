@@ -1,0 +1,14 @@
+CREATE TABLE IF NOT EXISTS devices (
+  id BIGSERIAL PRIMARY KEY,
+  name VARCHAR(100) NOT NULL,
+  type VARCHAR(50),
+  status VARCHAR(20),
+  created_at TIMESTAMP
+);
+
+CREATE TABLE IF NOT EXISTS telemetry (
+  id BIGSERIAL PRIMARY KEY,
+  device_id BIGINT NOT NULL REFERENCES devices(id),
+  ts TIMESTAMP,
+  data TEXT
+);

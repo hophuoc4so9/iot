@@ -73,6 +73,8 @@ void loop() {
     String rxData = Serial.readStringUntil('\n');
     if (deviceConnected) {
       rxData.trim();
+      rxData.replace("\n", ""); 
+      rxData.replace("\r", ""); 
       pCharacteristic->setValue(rxData.c_str());
       pCharacteristic->notify(); // Gửi dữ liệu qua BLE
       Serial.print("Send to: ");

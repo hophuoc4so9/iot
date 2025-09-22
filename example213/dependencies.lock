@@ -1,0 +1,17 @@
+dependencies:
+  idf:
+    source:
+      type: idf
+    version: 5.5.1
+  qrcode:
+    dependencies: []
+    source:
+      path: D:\iot-projects\example213\components\qrcode
+      type: local
+    version: 0.1.0~2
+direct_dependencies:
+- espressif/qrcode
+- idf
+manifest_hash: 6584ca2a9aafda58a5e62dec9175c822d5ed23c0fa7e09f5d938c43569b3890c
+target: esp32s3
+version: 2.0.0

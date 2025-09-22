@@ -4,17 +4,17 @@
 #include <BLEUtils.h>
 #include <BLE2902.h>
 
-#define ledPIN 2 
+#define LED_PIN 2   // GPIO cho LED
 
-// Khai báo UUID cho Service và Characteristic
-// Bạn có thể dùng UUID này hoặc tạo UUID mới
-#define SERVICE_UUID "4fafc201-1fb5-459e-8fcc-c5c9c331914b"
+// UUID cho Service và Characteristic
+#define SERVICE_UUID        "4fafc201-1fb5-459e-8fcc-c5c9c331914b"
 #define CHARACTERISTIC_UUID "beb5483e-36e1-4688-b7f5-ea07361b26a8"
 
-BLECharacteristic *pCharacteristic = NULL;
+BLEServer* pServer = NULL;
+BLECharacteristic* pCharacteristic = NULL;
 bool deviceConnected = false;
 
-// Lớp Callback để xử lý sự kiện kết nối/ngắt kết nối từ Client
+// Callback xử lý khi Client kết nối / ngắt kết nối
 class MyServerCallbacks: public BLEServerCallbacks {
   void onConnect(BLEServer* pServer) {
     deviceConnected = true;
@@ -24,63 +24,89 @@ class MyServerCallbacks: public BLEServerCallbacks {
   void onDisconnect(BLEServer* pServer) {
     deviceConnected = false;
     Serial.println("Client Disconnected!");
-    pServer->getAdvertising()->start();
+    BLEDevice::startAdvertising(); // Quảng bá lại để client khác kết nối
   }
 };
 
+// Callback xử lý khi Client ghi dữ liệu vào Characteristic
 class MyCharacteristicCallbacks: public BLECharacteristicCallbacks {
-    void onWrite(BLECharacteristic *pCharacteristic) {
-      std::string rxValue = pCharacteristic->getValue();
+  void onWrite(BLECharacteristic* pCharacteristic) {
+    std::string rxValue = pCharacteristic->getValue();
 
-      if (rxValue.length() > 0) {
-        Serial.print("Received Value: ");
-        Serial.println(rxValue.c_str());
+    if (rxValue.length() > 0) {
+      Serial.print("Received from BLE: ");
+      Serial.println(rxValue.c_str());
 
-        if (rxValue == "1") {
-          Serial.println("Turning LED ON");
-          digitalWrite(ledPIN, HIGH);
-        }
-        else if (rxValue == "0") {
-          Serial.println("Turning LED OFF");
-          digitalWrite(ledPIN, LOW);
-        }
+      // Nếu client gửi "1" thì bật LED, "0" thì tắt LED
+      if (rxValue == "1") {
+        digitalWrite(LED_PIN, HIGH);
+        Serial.println("LED ON");
+      } else if (rxValue == "0") {
+        digitalWrite(LED_PIN, LOW);
+        Serial.println("LED OFF");
       }
     }
+  }
 };
 
 void setup() {
-  pinMode(ledPIN, OUTPUT);
-  digitalWrite(ledPIN, LOW); 
   Serial.begin(115200);
-  Serial.println("Starting BLE work!");
+  pinMode(LED_PIN, OUTPUT);
+  digitalWrite(LED_PIN, LOW);
 
-  // 1. Khởi tạo thiết bị BLE và đặt tên
-  BLEDevice::init("ESP32_LED_Control");
+  Serial.println("Starting BLE work...");
+
+  // 1. Khởi tạo BLE
+  BLEDevice::init("ESP32S3_BLE_UART_LED");
 
   // 2. Tạo BLE Server
-  BLEServer *pServer = BLEDevice::createServer();
+  pServer = BLEDevice::createServer();
   pServer->setCallbacks(new MyServerCallbacks());
 
   // 3. Tạo BLE Service
-  BLEService *pService = pServer->createService(SERVICE_UUID);
+  BLEService* pService = pServer->createService(SERVICE_UUID);
 
-  // 4. Tạo BLE Characteristic
+  // 4. Tạo BLE Characteristic (Read, Write, Notify)
   pCharacteristic = pService->createCharacteristic(
-                      CHARACTERISTIC_UUID,
-                      BLECharacteristic::PROPERTY_WRITE // Chỉ cho phép client ghi dữ liệu
-                    );
+    CHARACTERISTIC_UUID,
+    BLECharacteristic::PROPERTY_READ   |
+    BLECharacteristic::PROPERTY_WRITE  |
+    BLECharacteristic::PROPERTY_NOTIFY
+  );
 
+  // Gán callback khi có Client ghi dữ liệu
   pCharacteristic->setCallbacks(new MyCharacteristicCallbacks());
 
+  // Thêm Descriptor để client có thể bật Notify
+  pCharacteristic->addDescriptor(new BLE2902());
+
+  // 5. Start Service
   pService->start();
 
-  BLEAdvertising *pAdvertising = BLEDevice::getAdvertising();
+  // 6. Quảng bá (Advertising)
+  BLEAdvertising* pAdvertising = BLEDevice::getAdvertising();
   pAdvertising->addServiceUUID(SERVICE_UUID);
   pAdvertising->setScanResponse(true);
   BLEDevice::startAdvertising();
+
   Serial.println("Bluetooth Started! Ready to pair...");
 }
 
 void loop() {
-  delay(1000);
+  
+  if (Serial.available()) {
+    String rxData = Serial.readStringUntil('\n');
+    rxData.trim();
+    rxData.replace("\n", ""); 
+    rxData.replace("\r", ""); 
+
+    if (deviceConnected) {
+      pCharacteristic->setValue(rxData.c_str());
+      pCharacteristic->notify();
+      Serial.print("Send to BLE Client: ");
+      Serial.println(rxData);
+    }
+  }
+
+  delay(200);
 }

@@ -10,8 +10,8 @@ String doorState;
 unsigned long previousMillis = 0; 
 const long interval = 20000; // 20 giây
 
-const char* ssid = "HO TUONG VSIP";
-const char* password = "111222333";
+const char* ssid = "TDMU";
+const char* password = "";
 const char* host = "maker.ifttt.com";
 const char* apiKey = "lkCHpWBG3NPAKJ-GJ20uPNvfujGWMIrsmZy0wBDHqhm";
 
@@ -70,5 +70,13 @@ void loop() {
                  "Content-Type: application/x-www-form-urlencoded\r\n" + 
                  "Content-Length: " + body.length() + "\r\n\r\n" +
                  body + "\r\n");
+    while (client.connected()) {
+    String line = client.readStringUntil('\n');
+    if (line == "\r") {
+      break;
+    }
   }
+  Serial.println("Response: " + client.readString());
+  }
+
 }
