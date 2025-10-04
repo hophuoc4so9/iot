@@ -1,0 +1,55 @@
+test bài 4
+
+chạy esp32
+ pio run --target upload
+pio device monitor
+
+
+
+npm install
+
+chạy mqtt:
+docker-compose up -d
+docker-compose up -d mqtt-broker
+docker logs -f mqtt-broker
+
+
+
+WS_SERVICE_TYPE=real hoặc mock
+
+
+Chay Web :npm run dev
+
+
+chạy app: flutter run
+
+
+
+cài đặt
+luôn chạy $env:PUB_CACHE = "D:\pub_cache"
+
+$env:PUB_CACHE = "D:\pub_cache"
+
+flutter pub get
+
+ cd .\mobile_app\
+D:\development\flutter_windows_3.16.0-stable\flutter\bin\flutter.bat pub get
+
+
+mock websocket: 
+node server.js
+
+
+
+chạy web app: 
+flutter run -d chrome
+flutter run -d chrome --dart-define=WS_MOCK_URL=ws://localhost:8080
+
+
+flutter devices
+flutter run -d android
+flutter run -d emulator-5554
+flutter run -d emulator-5554 --dart-define=MQTT_WS_URL=wss://broker.emqx.io:8084/mqtt --dart-define=WS_MOCK_URL=ws://localhost:8080
+
+
+start ms-settings:developers

@@ -2,6 +2,8 @@ package com.example.iot_backend.mqtt;
 
 import com.example.iot_backend.config.MqttConfig;
 import com.example.iot_backend.service.TelemetryService;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.hivemq.client.mqtt.MqttClient;
 import com.hivemq.client.mqtt.datatypes.MqttQos;
 import com.hivemq.client.mqtt.mqtt3.Mqtt3AsyncClient;
@@ -21,11 +23,13 @@ public class PahoMqttService {
   private static final Logger log = LoggerFactory.getLogger(PahoMqttService.class);
   private final MqttConfig cfg;
   private final TelemetryService telemetryService;
+  private final ObjectMapper objectMapper;
   private Mqtt3AsyncClient client;
 
   public PahoMqttService(MqttConfig cfg, TelemetryService telemetryService) {
     this.cfg = cfg;
     this.telemetryService = telemetryService;
+    this.objectMapper = new ObjectMapper();
   }
 
   @Bean
@@ -60,8 +64,18 @@ public class PahoMqttService {
           }
           log.info("Connected to MQTT broker {}:{}", cfg.getHost(), cfg.getPort());
 
-          // Sub wildcard để nhận mọi thiết bị
+          // Subscribe to device telemetry (wildcard pattern)
           subscribeToDeviceTelemetry();
+          
+          // Subscribe to temperature topic if configured
+          if (cfg.getTopicTemp() != null && !cfg.getTopicTemp().isBlank()) {
+            subscribeToTopic(cfg.getTopicTemp());
+          }
+          
+          // Subscribe to humidity topic if configured
+          if (cfg.getTopicHum() != null && !cfg.getTopicHum().isBlank()) {
+            subscribeToTopic(cfg.getTopicHum());
+          }
         });
   }
 
@@ -76,7 +90,22 @@ public class PahoMqttService {
           if (subEx != null) {
             log.error("MQTT subscribe failed for topic {}: {}", topic, subEx.getMessage(), subEx);
           } else {
-            log.info("Subscribed to {}", topic);
+            log.info("Subscribed to device telemetry: {}", topic);
+          }
+        });
+  }
+
+  private void subscribeToTopic(String topic) {
+    client.subscribeWith()
+        .topicFilter(topic)
+        .qos(MqttQos.fromCode(cfg.getQos()))
+        .callback(this::messageArrived)
+        .send()
+        .whenComplete((subAck, subEx) -> {
+          if (subEx != null) {
+            log.error("MQTT subscribe failed for topic {}: {}", topic, subEx.getMessage(), subEx);
+          } else {
+            log.info("Subscribed to topic: {}", topic);
           }
         });
   }
@@ -86,13 +115,47 @@ public class PahoMqttService {
     String payload = new String(publish.getPayloadAsBytes(), StandardCharsets.UTF_8);
     log.info("Received topic={} payload={}", topic, payload);
 
-    // Extract deviceId từ topic: iot/device/{id}/telemetry
+    // Handle device telemetry messages
+    if (topic.matches("iot/device/.+/telemetry")) {
+      handleDeviceTelemetry(topic, payload);
+    } else {
+      // Handle other topic messages (temperature/humidity alerts)
+      processMessage(topic, payload);
+    }
+  }
+
+  private void handleDeviceTelemetry(String topic, String payload) {
     try {
+      // Extract deviceId from topic: iot/device/{id}/telemetry
       String[] parts = topic.split("/");
       Long deviceId = Long.parseLong(parts[2]);
       telemetryService.saveTelemetry(deviceId, payload);
     } catch (Exception e) {
-      log.error("Failed to save telemetry", e);
+      log.error("Failed to save telemetry for topic {}: {}", topic, e.getMessage(), e);
+    }
+  }
+
+  private void processMessage(String topic, String payload) {
+    try {
+      JsonNode jsonNode = objectMapper.readTree(payload);
+      
+      // Check for temperature alerts if this is a temperature topic
+      if (cfg.getTopicTemp() != null && topic.equals(cfg.getTopicTemp()) && jsonNode.has("temp")) {
+        double temperature = jsonNode.get("temp").asDouble();
+        if (temperature > 30.0) {
+          log.warn("TEMPERATURE ALERT: {}°C is above 30°C threshold! Topic: {}", 
+                   temperature, topic);
+        }
+      }
+      
+      // Log humidity data if this is humidity topic
+      if (cfg.getTopicHum() != null && topic.equals(cfg.getTopicHum()) && jsonNode.has("hum")) {
+        double humidity = jsonNode.get("hum").asDouble();
+        log.info("Humidity reading: {}% from topic: {}", humidity, topic);
+      }
+      
+    } catch (Exception e) {
+      log.error("Failed to parse JSON payload from topic {}: {}", topic, e.getMessage());
     }
   }
 

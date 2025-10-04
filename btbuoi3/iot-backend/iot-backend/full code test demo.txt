@@ -16,9 +16,13 @@ mysql
 SHOW iotdb;
 SELECT * FROM telemetry
 
+code test lab5:
+
+
 code test lab6:
 
-chạy redis: docker run -d --name redis -p 6379:6379 redis:latest
+chạy redis: 
+docker run -d --name redis -p 6379:6379 redis:latest
 
 # Lấy tất cả topics từ Redis
 curl "http://localhost:8080/api/mqtt/topics"
@@ -75,3 +79,81 @@ FROM telemetry2
 WHERE ts BETWEEN NOW() - INTERVAL 7 DAY AND NOW();
 
 
+//
+
+USE iotdb;
+
+-- Xoá bảng cũ nếu có
+DROP TABLE IF EXISTS telemetry_weekly;
+
+-- Tạo bảng partition theo tuần (7 ngày)
+CREATE TABLE telemetry_weekly (
+   id BIGINT AUTO_INCREMENT,
+   device_id BIGINT NOT NULL,
+   ts DATETIME NOT NULL,
+   data JSON,
+   PRIMARY KEY (id, ts)   -- PK phải include ts vì ts dùng trong partition
+)
+PARTITION BY RANGE (TO_DAYS(ts)) (
+   PARTITION p2025w38 VALUES LESS THAN (TO_DAYS('2025-09-22')),  -- tuần 38
+   PARTITION p2025w39 VALUES LESS THAN (TO_DAYS('2025-09-29')),  -- tuần 39
+   PARTITION p2025w40 VALUES LESS THAN (TO_DAYS('2025-10-06')),  -- tuần 40
+   PARTITION p2025w41 VALUES LESS THAN (TO_DAYS('2025-10-13')),  -- tuần 41
+   PARTITION pmax    VALUES LESS THAN MAXVALUE
+);
+
+-- Index để tối ưu truy vấn
+CREATE INDEX idx_weekly_device_ts ON telemetry_weekly (device_id, ts);
+CREATE INDEX idx_weekly_ts ON telemetry_weekly (ts);
+
+-- Test insert dữ liệu mẫu (vào bảng weekly chứ không phải telemetry2)
+INSERT INTO telemetry_weekly (device_id, ts, data) VALUES
+ (1, '2025-09-15 10:00:00', JSON_OBJECT('temp', 25, 'hum', 60)),
+ (1, '2025-09-20 12:00:00', JSON_OBJECT('temp', 30, 'hum', 55)),
+ (2, '2025-09-25 14:30:00', JSON_OBJECT('temp', 28, 'hum', 50)),
+ (2, '2025-10-02 16:45:00', JSON_OBJECT('temp', 32, 'hum', 70)),
+ (3, '2025-10-05 08:00:00', JSON_OBJECT('temp', 27, 'hum', 65));
+
+-- Truy vấn kiểm tra (7 ngày gần nhất)
+EXPLAIN ANALYZE
+SELECT id, device_id, ts, data
+FROM telemetry_weekly
+WHERE ts BETWEEN NOW() - INTERVAL 7 DAY AND NOW();
+
+tạo view
+CREATE OR REPLACE VIEW latest_telemetry AS
+SELECT t.id, t.device_id, t.ts, t.data
+FROM telemetry_weekly t
+JOIN (
+  SELECT device_id, MAX(ts) AS max_ts
+  FROM telemetry_weekly
+  GROUP BY device_id
+) x
+ON t.device_id = x.device_id AND t.ts = x.max_ts;
+
+
+
+
+index 3 truy vấn
+CREATE INDEX idx_temp_num 
+ON telemetry_weekly ((CAST(JSON_UNQUOTE(JSON_EXTRACT(data, '$.temp')) AS DECIMAL(5,2))));
+
+
+
+nén dữ liệu
+-- Bật compression cho hypertable
+ALTER TABLE telemetry SET (
+  timescaledb.compress,
+  timescaledb.compress_orderby = 'ts DESC',
+  timescaledb.compress_segmentby = 'device_id'
+);
+
+-- Nén dữ liệu cũ hơn 30 ngày
+SELECT compress_chunk(i)
+FROM show_chunks('telemetry', older_than => INTERVAL '30 days') i;
+
+
+-- Trước và sau compression
+SELECT hypertable_name, total_bytes, compressed_total_bytes, 
+       (1 - compressed_total_bytes::numeric/total_bytes)*100 AS saved_percent
+FROM hypertable_compression_stats;

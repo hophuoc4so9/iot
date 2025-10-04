@@ -38,22 +38,13 @@ public class SubscriptionManager {
       @Override public void connectionLost(Throwable cause) {
         log.warn("MQTT lost: {}", cause.getMessage());
       }
+      
       @Override public void messageArrived(String topic, MqttMessage message) {
         String payload = new String(message.getPayload());
         log.info("[SUB] {} -> {}", topic, payload);
-        
-        // Lưu vào cả in-memory và Redis store (Lab 6 bài tập 3)
         messageStore.append(topic, payload);
-        redisMessageStore.append(topic, payload);
-        
-        // Bộ lọc: chỉ forward WebSocket khi temp > ngưỡng (Lab 6 bài tập 2)
-        if (shouldForwardToWebSocket(payload)) {
-          messagingTemplate.convertAndSend("/topic/stream", "{\"topic\":\"" + topic + "\",\"data\":" + payload + "}");
-          log.info("Forwarded to WebSocket: {} -> {}", topic, payload);
-        } else {
-          log.debug("Message filtered out (temp <= {}): {}", TEMPERATURE_THRESHOLD, payload);
-        }
-      }
+        messagingTemplate.convertAndSend("/topic/stream", "{\"topic\":\"" + topic + "\",\"data\":" + payload + "}");
+      }      
       @Override public void deliveryComplete(IMqttDeliveryToken token) {}
     });
 
@@ -86,23 +77,5 @@ public class SubscriptionManager {
     return Set.copyOf(currentTopics);
   }
 
-  /**
-   * Kiểm tra xem có nên forward message lên WebSocket hay không
-   * Chỉ forward khi nhiệt độ > ngưỡng (Lab 6 bài tập 2)
-   */
-  private boolean shouldForwardToWebSocket(String payload) {
-    try {
-      JsonNode jsonNode = objectMapper.readTree(payload);
-      if (jsonNode.has("temp")) {
-        double temperature = jsonNode.get("temp").asDouble();
-        return temperature > TEMPERATURE_THRESHOLD;
-      }
-      // Nếu không có trường temp, vẫn forward (có thể là dữ liệu khác)
-      return true;
-    } catch (Exception e) {
-      log.warn("Failed to parse JSON payload for temperature filtering: {}", payload, e);
-      // Nếu không parse được JSON, vẫn forward để không mất dữ liệu
-      return true;
-    }
-  }
+  
 }

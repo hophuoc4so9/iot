@@ -51,7 +51,7 @@ public class SubscriptionController {
   // Xem N message gần nhất theo topic (REST polling) - Redis version
   @GetMapping("/recent")
   public List<String> recent(@RequestParam String topic, @RequestParam(defaultValue = "50") int limit) {
-    return redisStore.recent(topic, limit);
+    return store.recent(topic, limit);
   }
 
   // Xem N message gần nhất theo topic từ in-memory store (backward compatibility)
@@ -63,7 +63,7 @@ public class SubscriptionController {
   // Trả về toàn bộ topic đã từng nhận từ Redis (Lab 6 bài tập 1)
   @GetMapping("/topics")
   public Set<String> getAllTopics() {
-    return redisStore.topics();
+    return store.topics();
   }
 
   // Trả về toàn bộ topic từ in-memory store (backward compatibility)

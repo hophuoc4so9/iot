@@ -5,7 +5,7 @@ from paho.mqtt import client as mqtt
 
 BROKER = "localhost"
 PORT = 1883
-DEVICE_ID = 1
+DEVICE_ID = 2
 TOPIC = f"iot/device/{DEVICE_ID}/command"
 
 device_state = "OFF"

@@ -1,0 +1,61 @@
+// server.js - Node.js WebSocket server for IoT mock data
+const WebSocket = require('ws');
+
+const wss = new WebSocket.Server({ port: 8080 });
+
+console.log('WebSocket server started on port 8080');
+
+wss.on('connection', (ws) => {
+  console.log('Client connected');
+  
+  // Send mock IoT data every 2 seconds
+  const interval = setInterval(() => {
+    // Generate data for multiple devices like the Flutter app expects
+    const devices = ['ESP32-001', 'ESP32-002', 'ESP32-003'];
+    
+    devices.forEach(deviceId => {
+      const data = {
+        deviceId: deviceId,
+        temperature: 20 + Math.random() * 20, // 20-40°C
+        humidity: 40 + Math.random() * 40,    // 40-80%
+        led: Math.random() > 0.5,
+        timestamp: new Date().toISOString()
+      };
+      
+      ws.send(JSON.stringify(data));
+      console.log(`Sent data for ${deviceId}: ${data.temperature.toFixed(1)}°C, ${data.humidity.toFixed(1)}%`);
+    });
+  }, 2000);
+  
+  // Handle incoming control commands
+  ws.on('message', (message) => {
+    try {
+      const command = JSON.parse(message);
+      console.log('Received control command:', command);
+      
+      // Echo back confirmation
+      ws.send(JSON.stringify({
+        type: 'control_response',
+        deviceId: command.deviceId,
+        success: true,
+        timestamp: new Date().toISOString()
+      }));
+    } catch (e) {
+      console.log('Error parsing message:', e);
+    }
+  });
+  
+  ws.on('close', () => {
+    clearInterval(interval);
+    console.log('Client disconnected');
+  });
+  
+  ws.on('error', (error) => {
+    console.log('WebSocket error:', error);
+    clearInterval(interval);
+  });
+});
+
+wss.on('error', (error) => {
+  console.log('Server error:', error);
+});
