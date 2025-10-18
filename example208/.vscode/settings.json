@@ -3,7 +3,7 @@
   "idf.espIdfPathWin": "d:\\Users\\hophu\\esp\\v5.5.1\\esp-idf",
   "idf.pythonInstallPath": "d:\\Users\\hophu\\.espressif\\tools\\idf-python\\3.11.2\\python.exe",
   "idf.openOcdConfigs": [
-    "board/esp32s3-builtin.cfg"
+    "board/esp32c3-builtin.cfg"
   ],
   "idf.toolsPathWin": "d:\\Users\\hophu\\.espressif",
   "idf.customExtraVars": {
@@ -15,7 +15,7 @@
     "--query-driver=d:\\Users\\hophu\\.espressif\\tools\\xtensa-esp-elf\\esp-14.2.0_20241119\\xtensa-esp-elf\\bin\\xtensa-esp32-elf-gcc.exe",
     "--compile-commands-dir=${workspaceFolder}\\build"
   ],
-  "idf.portWin": "COM5",
+  "idf.portWin": "COM9",
   "idf.flashType": "UART",
   "files.associations": {
     "gpio.h": "c"

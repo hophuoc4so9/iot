@@ -1,0 +1,61 @@
+.App {
+  font-family: 'Segoe UI', sans-serif;
+  padding: 2rem;
+  max-width: 700px;
+  margin: auto;
+  background-color: #fdfdfd;
+  color: #222;
+}
+
+h1 {
+  text-align: center;
+  color: #008080;
+}
+
+.device-section,
+.form-section,
+.control-section {
+  margin-top: 2rem;
+}
+
+.device-list {
+  list-style: none;
+  padding: 0;
+}
+
+.device-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: #eef;
+  margin-bottom: 0.5rem;
+  padding: 0.5rem 1rem;
+  border-radius: 8px;
+}
+
+.device-item code {
+  font-size: 0.9em;
+  color: #555;
+}
+
+input {
+  margin: 0.3rem 0.5rem 0.3rem 0;
+  padding: 0.5rem;
+  border-radius: 5px;
+  border: 1px solid #ccc;
+  width: calc(100% - 20px);
+}
+
+button {
+  padding: 0.5rem 1rem;
+  border: none;
+  background-color: #008080;
+  color: white;
+  border-radius: 5px;
+  cursor: pointer;
+  margin-top: 0.5rem;
+}
+
+button:hover {
+  background-color: #006666;
+}

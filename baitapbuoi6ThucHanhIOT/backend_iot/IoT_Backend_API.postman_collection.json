@@ -1,0 +1,284 @@
+{
+  "info": {
+    "name": "IoT Backend API",
+    "description": "REST API for ESP32 IoT device control and monitoring",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:8080/api/v1",
+      "type": "string"
+    },
+    {
+      "key": "deviceId",
+      "value": "demo",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "System Info",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/info",
+          "host": ["{{baseUrl}}"],
+          "path": ["info"]
+        }
+      }
+    },
+    {
+      "name": "Device Control",
+      "item": [
+        {
+          "name": "Set LED RGB (Query Params)",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/device/led/rgb?r=255&g=0&b=0",
+              "host": ["{{baseUrl}}"],
+              "path": ["device", "led", "rgb"],
+              "query": [
+                {"key": "r", "value": "255"},
+                {"key": "g", "value": "0"},
+                {"key": "b", "value": "0"}
+              ]
+            }
+          }
+        },
+        {
+          "name": "Set LED Green",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/device/led/rgb?r=0&g=255&b=0",
+              "host": ["{{baseUrl}}"],
+              "path": ["device", "led", "rgb"],
+              "query": [
+                {"key": "r", "value": "0"},
+                {"key": "g", "value": "255"},
+                {"key": "b", "value": "0"}
+              ]
+            }
+          }
+        },
+        {
+          "name": "Set LED Blue",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/device/led/rgb?r=0&g=0&b=255",
+              "host": ["{{baseUrl}}"],
+              "path": ["device", "led", "rgb"],
+              "query": [
+                {"key": "r", "value": "0"},
+                {"key": "g", "value": "0"},
+                {"key": "b", "value": "255"}
+              ]
+            }
+          }
+        },
+        {
+          "name": "Set LED Purple",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/device/led/rgb?r=128&g=0&b=128",
+              "host": ["{{baseUrl}}"],
+              "path": ["device", "led", "rgb"],
+              "query": [
+                {"key": "r", "value": "128"},
+                {"key": "g", "value": "0"},
+                {"key": "b", "value": "128"}
+              ]
+            }
+          }
+        },
+        {
+          "name": "Turn LED Off",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/device/led/off",
+              "host": ["{{baseUrl}}"],
+              "path": ["device", "led", "off"]
+            }
+          }
+        },
+        {
+          "name": "Control LED (JSON Body)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"led_rgb\": [255, 128, 0]\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/device/led",
+              "host": ["{{baseUrl}}"],
+              "path": ["device", "led"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Device State",
+      "item": [
+        {
+          "name": "Get Current State",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/device/state?deviceId={{deviceId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["device", "state"],
+              "query": [
+                {"key": "deviceId", "value": "{{deviceId}}"}
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get State History",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/device/state/history?deviceId={{deviceId}}&limit=50",
+              "host": ["{{baseUrl}}"],
+              "path": ["device", "state", "history"],
+              "query": [
+                {"key": "deviceId", "value": "{{deviceId}}"},
+                {"key": "limit", "value": "50"}
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Recent States (All Devices)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/device/states/recent",
+              "host": ["{{baseUrl}}"],
+              "path": ["device", "states", "recent"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Sensor Data",
+      "item": [
+        {
+          "name": "Get Recent Sensor Data",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/sensor/recent?limit=100",
+              "host": ["{{baseUrl}}"],
+              "path": ["sensor", "recent"],
+              "query": [
+                {"key": "limit", "value": "100"}
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get All Sensor Data",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/sensor/all",
+              "host": ["{{baseUrl}}"],
+              "path": ["sensor", "all"]
+            }
+          }
+        },
+        {
+          "name": "Get Sensor Data by ID",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/sensor/1",
+              "host": ["{{baseUrl}}"],
+              "path": ["sensor", "1"]
+            }
+          }
+        },
+        {
+          "name": "Post Sensor Data",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "text/plain"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"temperature\": 25.5, \"humidity\": 60}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/sensor?topic=esp32/sensor",
+              "host": ["{{baseUrl}}"],
+              "path": ["sensor"],
+              "query": [
+                {"key": "topic", "value": "esp32/sensor"}
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "MQTT",
+      "item": [
+        {
+          "name": "Publish to MQTT",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"message\": \"Hello from Postman\"}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/publish?topic=iot/demo/test",
+              "host": ["{{baseUrl}}"],
+              "path": ["publish"],
+              "query": [
+                {"key": "topic", "value": "iot/demo/test"}
+              ]
+            }
+          }
+        }
+      ]
+    }
+  ]
+}

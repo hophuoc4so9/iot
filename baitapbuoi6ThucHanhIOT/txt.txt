@@ -1,0 +1,1153 @@
+BÁO CÁO CHI TIẾT
+1. Eclipse Paho Client.
+Bước 1: Sửa file pom.xml
+ 
+<groupId>: chỉ định tổ chức, nhóm phát hành.
+<artifactId>: tên artifact/biblioteca.
+<version>: phiên bản.
+<scope>: phạm vi sử dụng
+Bước 2: Tạo file MqttPublishModel.java
+
+
+import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Size;
+Hai dòng này import các annotation của Bean Validation:
+@NotNull: không cho phép giá trị null.
+@Size: giới hạn độ dài (áp dụng cho chuỗi, danh sách, mảng…).
+topic (String)
+@NotNull → không được null.
+@Size(min = 1, max = 255) → chuỗi phải có độ dài ít nhất 1 và tối đa 255 ký tự.
+message (String)
+@NotNull → không được null.
+@Size(min = 1, max = 255) → chuỗi phải có độ dài ít nhất 1 và tối đa 255 ký tự.
+retained (Boolean)
+@NotNull → bắt buộc phải có (true/false).
+qos (Integer)
+@NotNull → bắt buộc phải có.
+Integer dùng wrapper để phát hiện null.
+Getter method cho thuộc tính topic.
+Setter method cho topic.
+public String getMessage() {
+return message;
+}
+Getter cho message → trả về nội dung message hiện tại.
+public void setMessage(String message) {
+this.message = message;
+}
+Setter cho message → gán nội dung message được gửi từ request vào thuộc tính của object.
+public Boolean getRetained() {
+return retained;
+}
+Getter cho retained → trả về true hoặc false (giá trị có lưu lại trên broker không).
+public void setRetained(Boolean retained) {
+this.retained = retained;
+}
+Setter cho retained → nhận giá trị từ request JSON và gán cho thuộc tính trong object.
+public Integer getQos() {
+return qos;
+}
+Getter cho qos → trả về giá trị QoS hiện tại (0, 1 hoặc 2).
+public void setQos(Integer qos) {
+this.qos = qos;
+}
+Setter cho qos → gán giá trị QoS gửi từ client vào đối tượng MqttPublishModel.
+Bước 3: Tạo file MqttSubscribeModel.java
+
+
+public class MqttSubscribeModel: Khai báo lớp công khai tên là MqttSubscribeModel.
+private String message; Khai báo biến thành viên (field) tên message, kiểu dữ liệu String.
+private Integer qos; Biến qos kiểu Integer.
+private Integer id; Biến id kiểu Integer
+public String getMessage() {
+return message;
+}
+Getter cho thuộc tính message.
+public void setMessage(String message) {
+this.message = message;
+}
+Setter cho thuộc tính message.
+public Integer getQos() {
+return qos;
+}
+Getter cho qos. Trả về mức QoS của tin nhắn MQTT hiện tại.
+public void setQos(Integer qos) {
+this.qos = qos;
+}
+Setter cho qos. Gán giá trị QoS (0, 1, hoặc 2) được truyền vào cho biến nội bộ qos.
+public Integer getId() {
+return id;
+}
+Getter cho id. Trả về giá trị id hiện tại
+public void setId(Integer id) {
+this.id = id;
+}
+Setter cho id. Gán giá trị id mới cho biến nội bộ id.
+
+
+Bước 4: Tạo MqttConfig.java
+
+
+
+Các import này lấy các class cần thiết từ thư viện Eclipse Paho MQTT Client:
+IMqttClient: interface định nghĩa các hành vi chung của một MQTT client (connect, publish, subscribe,...).
+MqttClient: lớp cụ thể (implementation) của IMqttClient.
+MqttConnectOptions: đối tượng chứa các thiết lập khi kết nối tới MQTT broker.
+MqttException: ngoại lệ ném ra khi có lỗi liên quan đến MQTT (kết nối lỗi, publish lỗi...).
+public class MqttConfig { Khai báo lớp công khai tên là MqttConfig.
+private static final String MQTT_PUBLISHER_ID = "spring-server";Biến hằng (final) — không thể thay đổi sau khi khởi tạo. static → thuộc về class, không thuộc về từng object. "spring-server" là client ID mà MQTT broker dùng để định danh client này.
+private static IMqttClient instance; Biến tĩnh (static) kiểu IMqttClient, có thể dùng ở mọi nơi mà không cần tạo mới object MqttConfig.
+public static IMqttClient getInstance() { Hàm static để lấy instance duy nhất của MQTT client.
+if (instance == null) {
+instance = new MqttClient(MQTT_SERVER_ADDRES, MQTT_PUBLISHER_ID);
+}Kiểm tra xem biến instance đã được khởi tạo chưa. Nếu chưa có client nào, thì tạo mới MqttClient:
+MqttConnectOptions options = new MqttConnectOptions(); Tạo một đối tượng MqttConnectOptions để cấu hình các tùy chọn khi kết nối broker.
+options.setAutomaticReconnect(true); Bật chế độ tự động reconnect nếu kết nối tới broker bị ngắt.
+options.setConnectionTimeout(10); Thiết lập thời gian chờ kết nối (timeout) là 10 giây.
+if (!instance.isConnected()) {
+instance.connect(options);
+}Kiểm tra nếu client chưa kết nối, thì thực hiện kết nối đến broker với các tùy chọn options.
+} catch (MqttException e) {
+e.printStackTrace();
+} Nếu có lỗi xảy ra trong khối try (ví dụ broker không chạy, network lỗi), ngoại lệ MqttException sẽ bị bắt ở đây.
+return instance; Trả về client MQTT (IMqttClient) hiện tại.
+private MqttConfig() {
+}Constructor private → chặn không cho tạo object mới từ class này.
+Bước 5: Tạo MqttController.java
+
+
+MqttConfig: lớp cấu hình MQTT (nơi quản lý kết nối broker).
+ExceptionMessages, MqttException: các lớp xử lý lỗi tùy chỉnh.
+MqttPublishModel: model chứa thông tin khi publish
+MqttSubscribeModel: model chứa thông tin khi subscribe
+MqttMessage: class trong thư viện Paho, đại diện cho 1 tin nhắn MQTT.
+BindingResult: dùng để kiểm tra lỗi validate khi nhận dữ liệu từ client.
+@RestController, @RequestMapping, @PostMapping, @GetMapping: các annotation REST của Spring.
+CountDownLatch, TimeUnit: dùng để chờ nhận message (đồng bộ hóa luồng)
+@RestController: đánh dấu class này là một REST API controller (Spring Boot sẽ tự động chuyển return thành JSON).
+@RequestMapping("/api/mqtt"): mọi API trong class này sẽ bắt đầu bằng /api/mqtt.
+public class MqttController { Khai báo class controller
+@PostMapping("publish") Định nghĩa một API HTTP POST
+@RequestBody: nhận JSON từ body của request và ánh xạ sang MqttPublishModel.
+@Valid: bật cơ chế kiểm tra hợp lệ dữ liệu
+BindingResult: dùng để kiểm tra xem dữ liệu có hợp lệ không.
+throws MqttException: có thể ném lỗi nếu MQTT gặp sự cố.
+if (bindingResult.hasErrors()) {
+throw new MqttException(ExceptionMessages.SOME_PARAMETERS_INVALID);
+} Nếu dữ liệu từ client không hợp lệ (ví dụ topic trống hoặc message null), thì ném ra ngoại lệ tùy chỉnh MqttException.
+MqttMessage mqttMessage = new MqttMessage(messagePublishModel.getMessage().getBytes());
+Tạo 1 đối tượng MqttMessage mới, chứa dữ liệu cần gửi đi.
+mqttMessage.setQos(messagePublishModel.getQos());
+mqttMessage.setRetained(messagePublishModel.getRetained());
+setQos(qos) → đặt mức Quality of Service (độ tin cậy gửi tin):
+0: gửi một lần, không xác nhận.
+1: gửi ít nhất một lần (broker xác nhận).
+2: gửi chính xác một lần (an toàn nhất).
+MqttConfig.getInstance().publish(messagePublishModel.getTopic(), mqttMessage);Lấy client MQTT từ MqttConfig (Singleton instance). Gửi tin nhắn lên topic chỉ định.
+@GetMapping("subscribe") Định nghĩa API HTTP GET
+@RequestParam: nhận tham số từ URL (query string).
+topic: tên topic cần lắng nghe.
+wait_millis: thời gian tối đa (ms) sẽ chờ tin nhắn đến.
+List<MqttSubscribeModel>: trả về danh sách tin nhắn nhận được.
+List<MqttSubscribeModel> messages = new ArrayList<>(); Tạo danh sách rỗng để lưu các tin nhắn MQTT nhận được.
+CountDownLatch countDownLatch = new CountDownLatch(10);  tạo latch với giá trị 10 → controller sẽ chờ tối đa 10 tin nhắn trước khi trả kết quả về. Mỗi khi nhận được 1 tin nhắn, sẽ countDown() (giảm 1).
+MqttConfig.getInstance().subscribeWithResponse(topic, (s, mqttMessage) -> { Dùng client MQTT để đăng ký lắng nghe topic
+Tạo MqttSubscribeModel mới.
+setId: ID của message (mỗi message có một mã số duy nhất).
+setMessage: nội dung tin nhắn (chuyển từ byte sang String).
+setQos: mức QoS của tin nhắn.
+Thêm vào danh sách messages.
+Giảm bộ đếm countDownLatch (báo đã nhận được 1 tin).
+countDownLatch.await(waitMillis, TimeUnit.MILLISECONDS); Đợi đến khi: Nhận đủ 10 tin nhắn hoặc Hết thời gian chờ
+return messages; Sau khi hết thời gian chờ hoặc đủ tin, trả danh sách messages
+ 
+
+2. Java MQTT client (Eclipse Paho)
+
+pom.xml
+<dependency>
+    <groupId>org.springframework.boot</groupId>
+    <artifactId>spring-boot-starter-web</artifactId>
+</dependency>
+Đây là thư viện cơ bản nhất để tạo ứng dụng web hoặc REST API trong Spring Boot.
+Bao gồm các thành phần:
+- Spring MVC → xử lý request/response.
+- Tomcat → web server nhúng để chạy ứng dụng (không cần cài server riêng).
+- Jackson → tự động chuyển đổi dữ liệu JSON ↔ Java Object.
+<dependency>
+    <groupId>org.springframework.integration</groupId>
+    <artifactId>spring-integration-core</artifactId>
+</dependency>
+Đây là thư viện lõi (core) của Spring Integration — một framework chuyên xử lý message, event và workflow trong Spring.
+
+
+Nó cung cấp các khái niệm chính:
+- Message (thông điệp)
+- MessageChannel (kênh truyền)
+- MessageHandler (bộ xử lý)
+- ServiceActivator, Transformer, Router
+<dependency>
+    <groupId>org.springframework.integration</groupId>
+    <artifactId>spring-integration-mqtt</artifactId>
+    <version>6.2.3</version>
+</dependency>
+Đây là module mở rộng của Spring Integration — chuyên dùng cho MQTT.
+Nó sử dụng thư viện Eclipse Paho ở tầng thấp để thực hiện kết nối thực tế đến MQTT broker.
+Cung cấp các class tiện ích như:
+- MqttPahoMessageHandler → gửi message đến broker.
+- MqttPahoMessageDrivenChannelAdapter → nhận message từ broker.
+- MqttPahoClientFactory → tạo và quản lý kết nối MQTT client.
+<dependency>
+    <groupId>org.eclipse.paho</groupId>
+    <artifactId>org.eclipse.paho.client.mqttv3</artifactId>
+    <version>1.2.5</version>
+</dependency>
+Đây là thư viện chính thức của Eclipse dùng để làm MQTT client trong Java.
+Nó cung cấp tất cả API để:
+Kết nối đến MQTT broker (VD: Mosquitto, HiveMQ).
+Gửi message (publish).
+Nhận message (subscribe).
+Quản lý session, reconnect, QoS,...
+MqttConfig.java
+@Value("tcp://localhost:1883")
+private String brokerUrl;
+@Value("spring-boot-client")
+private String clientId;
+@Value(...) dùng để gán giá trị trực tiếp hoặc đọc từ file application.properties.
+Ở đây:
+- brokerUrl = "tcp://localhost:1883" → địa chỉ MQTT Broker (ví dụ Mosquitto).
+clientId = "spring-boot-client" → ID của client kết nối đến broker.
+@Bean
+public DefaultMqttPahoClientFactory mqttClientFactory() {
+    var factory = new DefaultMqttPahoClientFactory();
+    var options = new MqttConnectOptions();
+    options.setServerURIs(new String[] { brokerUrl });
+    options.setAutomaticReconnect(true);
+    options.setCleanSession(true);
+    factory.setConnectionOptions(options);
+    return factory;
+}
+@Bean: Spring sẽ tạo và quản lý bean mqttClientFactory để dùng ở nơi khác.
+DefaultMqttPahoClientFactory: lớp giúp Spring Integration tạo MQTT Client (Eclipse Paho).
+@Bean
+public MessageChannel mqttOutboundChannel() {
+    return new DirectChannel();
+}
+Đây là kênh gửi message nội bộ của Spring Integration.
+DirectChannel nghĩa là message được gửi trực tiếp đến handler (không qua hàng đợi).
+@Bean
+@ServiceActivator(inputChannel = "mqttOutboundChannel") 
+Đánh dấu bean này sẽ xử lý tất cả các message được gửi vào channel mqttOutboundChannel.
+Tức là: khi có message gửi đến channel này → handler này sẽ gửi message đó ra MQTT Broker.
+public MessageHandler mqttOutbound() {
+    var handler = new MqttPahoMessageHandler(clientId, mqttClientFactory());
+Tạo MQTT message handler để publish message qua client (Eclipse Paho).
+clientId: định danh client gửi.
+mqttClientFactory(): factory đã cấu hình kết nối broker ở trên.
+    handler.setAsync(true); Gửi message bất đồng bộ (non-blocking) → không làm chậm chương trình chính.
+    handler.setDefaultTopic("/test/topic"); Nếu không chỉ định topic khi gửi, mặc định sẽ gửi vào /test/topic
+    return handler;
+}
+MqttPublisherService.java
+@Service
+public class MqttPublisherService { 
+@Service giúp Spring tự động quản lý lớp này như một bean.
+Khi ứng dụng chạy, Spring sẽ tạo 1 đối tượng MqttPublisherService và cho phép các class khác (ví dụ MqttController) gọi đến nó.
+@Bean
+public MessageChannel mqttOutboundChannel() {
+    return new DirectChannel();
+}
+Đây là kênh truyền message nội bộ (MessageChannel) của Spring Integration
+@Value("/test/topic")
+private String defaultTopic;
+Dùng @Value để gán topic mặc định cho các message gửi đi.
+public void publish(String message) {
+    mqttOutboundChannel.send(
+        MessageBuilder.withPayload(message) :Tạo một Message Object có nội dung chính (payload) là chuỗi message bạn muốn gửi.
+            .setHeader("mqtt_topic", defaultTopic): Thêm header thông tin cho message.
+            .build(): Hoàn tất việc tạo message (org.springframework.messaging.Message).
+    );
+}
+ MqttController.java
+@RestController
+Báo cho Spring Boot biết đây là lớp điều khiển API (Controller).
+Khi có request HTTP đến, Spring sẽ chuyển tiếp request vào đây
+@RequestMapping("/api/mqtt")
+Xác định đường dẫn gốc (base URL) cho các API trong class này.
+→ Tất cả các endpoint bên trong sẽ bắt đầu bằng /api/mqtt.
+public class MqttController {
+private final MqttPublisherService mqttPublisherService;
+public MqttController(MqttPublisherService mqttPublisherService) {
+    this.mqttPublisherService = mqttPublisherService;
+}
+private final MqttPublisherService mqttPublisherService;
+→ Tạo một biến tham chiếu (dependency) đến lớp MqttPublisherService.
+
+
+
+@GetMapping("/publish")
+public String publish() {
+    mqttPublisherService.publish("Hi from the IoT application");
+    return "Message published!";
+} 
+Gọi đến service MqttPublisherService để gửi message "Hi from the IoT application" đến MQTT broker.
+
+
+3. ReactJS
+
+Mục tiêu chúng ta sẽ tạo và quản lý ứng dụng giao diện web bằng ReactJS, sẽ call api qua Backend(sử dụng Java Spring Boot) .
+
+Đầu tiên, tạo một lớp là Device.java với code như trên, chủ yếu là chúng ta sẽ khai báo kiểu dữ liệu cho lớp Device này bao gồm có trường id, name, topic và các getter setter cho chúng như một entity .
+Tiếp theo, chúng ta sẽ tạo một entity với tên là Telemetry gồm có các trường dữ liệu như id, deviceId, payload và timestamp và các getter, setter cho chúng .
+Tiếp theo là phần Mqtt Config.java, lớp này sẽ chịu trách nhiệm về cấu hình cho MQTT, với các trường như brokerUrl sẽ chạy port ở 1883, clientId sẽ là spring-boot-client. Và đồng thời tạo ra các topic là /test/topic để đưa dữ liệu từ cảm biến qua backend và lưu chúng vào database, sau đó front end sẽ gọi backend qua api để lấy data hiển thị. Và gồm có các channel khác nhau như “mqttInputChannel” và “mqttOutboundChannel”.
+
+Chúng ta sẽ tạo lớp dịch vụ là MqttPublusherService với mục đích là publish lên topic mà đã set up ở MQTT Config ở trên.
+
+Rồi chúng ta sẽ tạo DeviceRepository để thực hiện việc xử lý dữ liệu nghiệp vụ trong lớp repository này, tương tự như thế thì cũng sẽ có TelementryRepository
+
+Thì ở đây chúng ta sẽ cũng tạo ra interface TelementryRepository để thực hiên các nghiệp vụ liên quan đến telementry ở đây và khai báo một abstract function ở đây là findByDeviceId, thì cái này sẽ được gọi trong lớp Controller của nó.
+
+Tiếp theo là tạo một controlle tên là TelementryController.java để thực hiện khai báo đường dẫn  routing /telementry/deviceId thì nó sẽ gọi getByDevices bằng lớp telementryRepository.findByDeviceId.
+Tiếp theo, chúng ta sẽ tạo project front end bằng câu lệnh npx create-react-app example306-frontend.
+
+Ta sẽ gửi một subscription với topic là sensor/tmp là data:20 .Thì dữ liệu được gửi và lưu vào DB, sau đó đưa lên hiển thị trên ReactJS. 
+
+
+
+4. Flutter
+
+Đầu tiên tạo project example 307 bằng câu lệnh flutter create example 307 và sửa lại file pubspec.yaml, main.dart theo yêu cầu.
+
+Tạo file server.js để dựng 1 backend tạm bằng node.js và cài các thư viện cần thiết 
+npm init -y
+npm install express mqtt
+Sau đó chạy server node server.js
+
+Tiếp theo sử dụng MQTTX đăng ký topic có tên /sensor/temp và /sensor/humidity với Broker
+Đầu tiên cấu hình kết nối đến Local Broker
+
+Tiếp theo Tạo New Subscription đăng ký topic có tên /sensor/temp và /sensor/humidity với Broker
+
+Sau đó dùng câu lệnh flutter run để chạy app, hiện tại thì em chạy nó trên chrome vì không có thiết bị kết nối đến android
+Tạo 2 cái cảm biến nhiệt độ và độ ẩm để gửi lệnh
+
+Kiểm tra trong terminal lệnh đã gửi lên topic 
+
+Kiểm tra trên MQTTX cho thấy hệ thống đã publish thành công.
+
+5. Tổng hợp
+
+6. Tổng hợp điều khiển đèn
+
+Phần này tổng hợp toàn bộ hệ thống điều khiển đèn LED RGB thông qua giao thức MQTT, kết nối giữa ESP32, Backend (Spring Boot), và các ứng dụng Frontend (Web React, Mobile Flutter).
+
+6.1. Tổng quan kiến trúc hệ thống
+
+Hệ thống điều khiển đèn LED RGB sử dụng kiến trúc IoT với các thành phần chính:
+
+1. ESP32: Thiết bị phần cứng điều khiển đèn LED RGB (NeoPixel)
+2. MQTT Broker: Mosquitto broker làm trung gian truyền thông (10.30.233.17:1883)
+3. Backend: Spring Boot với Eclipse Paho MQTT Client
+4. Database: MySQL lưu trữ trạng thái và lịch sử
+5. Frontend: 
+   - Web (ReactJS + MQTT.js)
+   - Mobile (Flutter + MQTT Client)
+
+6.2. Luồng hoạt động
+
+Luồng điều khiển đèn:
+```
+User (Web/App) → REST API → Backend → MQTT Publish → ESP32 → Thực thi → Publish trạng thái
+                                                                              ↓
+                                                                    Backend nhận & lưu DB
+                                                                              ↓
+                                                                    Web/App cập nhật UI
+```
+
+Chi tiết:
+1. User thao tác trên giao diện (Web/App)
+2. Frontend gửi HTTP request đến Backend hoặc publish trực tiếp qua MQTT
+3. Backend nhận request và publish lệnh điều khiển lên topic `iot/demo/device/cmd`
+4. ESP32 subscribe topic này, nhận lệnh và thực thi (thay đổi màu LED)
+5. ESP32 publish trạng thái hiện tại lên topic `iot/demo/device/state`
+6. Backend subscribe topic state, nhận và lưu vào database
+7. Frontend cập nhật UI real-time qua MQTT hoặc polling REST API
+
+6.3. Cấu hình ESP32 (main.cpp)
+
+Bước 1: Khai báo thư viện và cấu hình WiFi/MQTT
+
+#include <WiFi.h>
+#include <PubSubClient.h>
+#include <ArduinoJson.h>
+#include <Adafruit_NeoPixel.h>
+
+const char* WIFI_SSID = "Pz";
+const char* WIFI_PASS = "111222333";
+const char* MQTT_HOST = "10.30.233.17";
+const int MQTT_PORT = 1883;
+const char* NS = "iot/demo";  // Namespace cho topics
+
+WiFi.h: thư viện kết nối WiFi
+PubSubClient.h: thư viện MQTT client cho ESP32
+ArduinoJson.h: xử lý JSON parsing/serialization
+Adafruit_NeoPixel.h: điều khiển LED RGB NeoPixel
+
+Bước 2: Khởi tạo LED NeoPixel và biến trạng thái
+
+const int RGB_PIN = 48;         // GPIO pin kết nối NeoPixel
+const int RGB_COUNT = 1;        // Số lượng LED
+Adafruit_NeoPixel strip(RGB_COUNT, RGB_PIN, NEO_GRB + NEO_KHZ800);
+
+int ledR = 0, ledG = 0, ledB = 0;  // Giá trị màu RGB hiện tại
+bool lightOn = false;               // Trạng thái đèn bật/tắt
+
+String topicDeviceCmd = "iot/demo/device/cmd";      // Topic nhận lệnh
+String topicDeviceState = "iot/demo/device/state";  // Topic gửi trạng thái
+
+Adafruit_NeoPixel: Khởi tạo LED strip với 1 pixel tại GPIO 48
+NEO_GRB + NEO_KHZ800: Cấu hình thứ tự màu và tần số 800KHz
+ledR, ledG, ledB: Lưu giá trị màu hiện tại (0-255)
+lightOn: Trạng thái đèn (true = bật, false = tắt)
+
+Bước 3: Hàm publish trạng thái đèn
+
+void publishDeviceState() {
+  StaticJsonDocument<200> doc;
+  doc["ts"] = getTimestamp();
+  doc["light"] = lightOn ? "on" : "off";
+  
+  JsonArray rgb = doc.createNestedArray("led_rgb");
+  rgb.add(ledR);
+  rgb.add(ledG);
+  rgb.add(ledB);
+  
+  String payload;
+  serializeJson(doc, payload);
+  
+  bool success = mqttClient.publish(topicDeviceState.c_str(), payload.c_str(), true);
+  if (success) {
+    Serial.println("📤 Published state successfully");
+  }
+}
+
+StaticJsonDocument<200>: Tạo JSON document với buffer 200 bytes
+doc["ts"]: Thêm timestamp (thời gian hiện tại)
+doc["light"]: Trạng thái đèn ("on" hoặc "off")
+createNestedArray("led_rgb"): Tạo array chứa 3 giá trị RGB
+serializeJson(): Chuyển JSON object thành chuỗi
+publish(): Gửi message lên topic với retained = true (lưu message cuối cùng trên broker)
+
+Format JSON gửi đi:
+{
+  "ts": "12345",
+  "light": "on",
+  "led_rgb": [255, 100, 50]
+}
+
+Bước 4: Hàm áp dụng màu cho LED
+
+void applyColor(int r, int g, int b) {
+  ledR = r; ledG = g; ledB = b;
+  lightOn = (r > 0 || g > 0 || b > 0);
+  strip.setPixelColor(0, strip.Color(ledR, ledG, ledB));
+  strip.show();
+}
+
+Lưu giá trị RGB vào biến toàn cục
+Tự động xác định lightOn: nếu có ít nhất 1 màu > 0 thì đèn đang bật
+strip.setPixelColor(0, ...): Đặt màu cho LED đầu tiên (index 0)
+strip.Color(r, g, b): Tạo giá trị màu 32-bit từ RGB
+strip.show(): Cập nhật LED (hiển thị màu mới)
+
+Bước 5: Xử lý lệnh điều khiển từ MQTT
+
+void handleDeviceCommand(char* topic, byte* payload, unsigned int length) {
+  StaticJsonDocument<200> doc;
+  DeserializationError err = deserializeJson(doc, payload, length);
+  
+  if (err) {
+    Serial.println("❌ JSON parse error");
+    return;
+  }
+
+  // Xử lý lệnh "light" (bật/tắt)
+  if (doc.containsKey("light")) {
+    String lightCmd = doc["light"].as<String>();
+    if (lightCmd == "on") {
+      applyColor(255, 255, 255);  // Bật đèn trắng
+      publishDeviceState();
+    } else if (lightCmd == "off") {
+      applyColor(0, 0, 0);  // Tắt đèn
+      publishDeviceState();
+    }
+  }
+  
+  // Xử lý lệnh "led_rgb" (thay đổi màu)
+  else if (doc.containsKey("led_rgb")) {
+    JsonArray arr = doc["led_rgb"].as<JsonArray>();
+    if (arr.size() >= 3) {
+      int r = arr[0];
+      int g = arr[1];
+      int b = arr[2];
+      applyColor(r, g, b);
+      publishDeviceState();
+    }
+  }
+  
+  // Xử lý lệnh "off" (backward compatibility)
+  else if (doc.containsKey("off")) {
+    if (doc["off"] == true) {
+      applyColor(0, 0, 0);
+      publishDeviceState();
+    }
+  }
+}
+
+deserializeJson(): Parse JSON từ byte array
+doc.containsKey(): Kiểm tra key có tồn tại không
+Lệnh "light": {"light": "on"} hoặc {"light": "off"}
+Lệnh "led_rgb": {"led_rgb": [255, 0, 0]}
+Lệnh "off": {"off": true}
+Sau mỗi lệnh, gọi publishDeviceState() để cập nhật trạng thái lên broker
+
+Bước 6: Kết nối WiFi và MQTT
+
+void connectWiFi() {
+  WiFi.begin(WIFI_SSID, WIFI_PASS);
+  while (WiFi.status() != WL_CONNECTED) {
+    delay(500);
+  }
+  Serial.println("✅ WiFi connected!");
+}
+
+void connectMqtt() {
+  mqttClient.setServer(MQTT_HOST, MQTT_PORT);
+  while (!mqttClient.connected()) {
+    if (mqttClient.connect("esp32-rgb-client", MQTT_USER, MQTT_PASSWD)) {
+      break;
+    }
+    delay(200);
+  }
+  
+  mqttClient.subscribe(topicDeviceCmd.c_str());
+  publishDeviceState();  // Gửi trạng thái ban đầu
+}
+
+void setup() {
+  strip.begin();
+  strip.setBrightness(80);
+  strip.show();
+  
+  connectWiFi();
+  mqttClient.setCallback(handleDeviceCommand);
+  connectMqtt();
+}
+
+void loop() {
+  if (!mqttClient.connected()) connectMqtt();
+  mqttClient.loop();
+  delay(10);
+}
+
+setup(): Khởi tạo LED, kết nối WiFi và MQTT
+mqttClient.setCallback(): Đăng ký hàm xử lý message
+mqttClient.subscribe(): Đăng ký nhận message từ topic command
+loop(): Duy trì kết nối MQTT và xử lý message
+
+6.4. Backend Spring Boot
+
+Bước 1: Cấu hình MQTT Service (MqttService.java)
+
+@Service
+public class MqttService {
+    @Value("${mqtt.broker:tcp://localhost:1883}")
+    private String brokerUrl;
+    
+    @Value("${mqtt.clientId:backend-iot-client}")
+    private String clientId;
+    
+    @Value("${mqtt.subscribeTopic:iot/demo/#}")
+    private String subscribeTopic;
+    
+    private MqttClient client;
+    
+    @PostConstruct
+    public void init() {
+        client = new MqttClient(brokerUrl, clientId, new MemoryPersistence());
+        MqttConnectOptions opts = new MqttConnectOptions();
+        opts.setAutomaticReconnect(true);
+        opts.setCleanSession(true);
+        client.connect(opts);
+        
+        client.setCallback(new MqttCallback() {
+            @Override
+            public void messageArrived(String topic, MqttMessage message) {
+                String payload = new String(message.getPayload());
+                
+                // Lưu raw sensor data
+                SensorData data = new SensorData(topic, payload, LocalDateTime.now());
+                repository.save(data);
+                
+                // Parse và lưu device state
+                if (topic.contains("/device/state")) {
+                    JsonNode json = objectMapper.readTree(payload);
+                    if (json.has("led_rgb")) {
+                        DeviceState state = new DeviceState();
+                        state.setDeviceId(extractDeviceId(topic));
+                        JsonNode rgb = json.get("led_rgb");
+                        state.setLedR(rgb.get(0).asInt());
+                        state.setLedG(rgb.get(1).asInt());
+                        state.setLedB(rgb.get(2).asInt());
+                        state.setTimestamp(LocalDateTime.now());
+                        deviceStateRepository.save(state);
+                    }
+                }
+            }
+        });
+        
+        client.subscribe(subscribeTopic, 1);
+    }
+}
+
+@PostConstruct: Tự động chạy sau khi Spring khởi tạo bean
+MqttClient: Tạo MQTT client với Eclipse Paho
+MqttConnectOptions: Cấu hình auto-reconnect và clean session
+setCallback(): Đăng ký hàm xử lý message nhận được
+messageArrived(): Được gọi khi có message mới
+Lưu 2 loại dữ liệu:
+  - SensorData: Dữ liệu thô (raw payload)
+  - DeviceState: Dữ liệu đã parse (giá trị RGB)
+subscribe("iot/demo/#"): Đăng ký tất cả topic trong namespace
+
+Bước 2: Model DeviceState.java
+
+@Entity
+@Table(name = "device_state")
+public class DeviceState {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+    
+    private String deviceId;
+    private Integer ledR;
+    private Integer ledG;
+    private Integer ledB;
+    private String rawPayload;
+    private LocalDateTime timestamp;
+    
+    // Getters & Setters
+}
+
+@Entity: Đánh dấu đây là JPA entity
+@Table: Tên bảng trong database
+@Id: Primary key
+@GeneratedValue: Tự động tăng ID
+ledR, ledG, ledB: Lưu giá trị RGB (0-255)
+rawPayload: Lưu JSON gốc
+timestamp: Thời gian nhận được
+
+Bước 3: DTO LedCommandRequest.java
+
+public class LedCommandRequest {
+    private int[] led_rgb;
+    private Boolean off;
+    
+    public LedCommandRequest() {}
+    
+    public LedCommandRequest(int[] led_rgb) {
+        this.led_rgb = led_rgb;
+    }
+    
+    // Getters & Setters
+}
+
+DTO (Data Transfer Object): Đối tượng truyền dữ liệu
+led_rgb: Mảng 3 số nguyên [R, G, B]
+off: Boolean để tắt đèn
+Constructor: Khởi tạo với giá trị RGB
+
+Bước 4: REST API Controller (IotController.java)
+
+@RestController
+@RequestMapping("/api/v1")
+@CrossOrigin(origins = "*")
+public class IotController {
+    private final MqttService mqttService;
+    
+    @Value("${mqtt.namespace:iot/demo}")
+    private String namespace;
+    
+    // Điều khiển LED với RGB
+    @PostMapping("/device/led/rgb")
+    public ResponseEntity<?> setLedRgb(@RequestParam int r, 
+                                       @RequestParam int g, 
+                                       @RequestParam int b) {
+        LedCommandRequest request = new LedCommandRequest(new int[]{r, g, b});
+        String topic = namespace + "/device/cmd";
+        String payload = objectMapper.writeValueAsString(request);
+        mqttService.publish(topic, payload, 1, false);
+        
+        return ResponseEntity.ok().body(Map.of(
+            "status", "LED color updated",
+            "rgb", new int[]{r, g, b}
+        ));
+    }
+    
+    // Tắt LED
+    @PostMapping("/device/led/off")
+    public ResponseEntity<?> turnOffLed() {
+        Map<String, Object> command = new HashMap<>();
+        command.put("off", true);
+        String topic = namespace + "/device/cmd";
+        String payload = objectMapper.writeValueAsString(command);
+        mqttService.publish(topic, payload, 1, false);
+        
+        return ResponseEntity.ok().body(Map.of("status", "LED turned off"));
+    }
+    
+    // Lấy trạng thái hiện tại
+    @GetMapping("/device/state")
+    public ResponseEntity<?> getDeviceState(@RequestParam String deviceId) {
+        DeviceState state = deviceStateRepository
+            .findFirstByDeviceIdOrderByTimestampDesc(deviceId)
+            .orElse(null);
+        
+        if (state == null) {
+            return ResponseEntity.notFound().build();
+        }
+        
+        DeviceStateResponse response = new DeviceStateResponse(
+            state.getDeviceId(),
+            new int[]{state.getLedR(), state.getLedG(), state.getLedB()},
+            state.getTimestamp()
+        );
+        
+        return ResponseEntity.ok(response);
+    }
+    
+    // Lấy lịch sử
+    @GetMapping("/device/state/history")
+    public ResponseEntity<?> getStateHistory(@RequestParam String deviceId,
+                                             @RequestParam(defaultValue = "50") int limit) {
+        List<DeviceState> history = deviceStateRepository
+            .findByDeviceIdOrderByTimestampDesc(deviceId)
+            .stream()
+            .limit(limit)
+            .collect(Collectors.toList());
+        
+        return ResponseEntity.ok(history);
+    }
+}
+
+@RestController: Đánh dấu lớp REST API controller
+@RequestMapping("/api/v1"): Base path cho tất cả endpoints
+@CrossOrigin: Cho phép CORS (Web có thể gọi API)
+@PostMapping: HTTP POST method
+@GetMapping: HTTP GET method
+@RequestParam: Nhận tham số từ URL query string
+@RequestBody: Nhận dữ liệu JSON từ body
+mqttService.publish(): Gửi lệnh lên MQTT broker
+objectMapper.writeValueAsString(): Chuyển object thành JSON
+ResponseEntity: Wrapper cho HTTP response
+
+API Endpoints:
+- POST /api/v1/device/led/rgb?r=255&g=0&b=0 - Đặt màu LED
+- POST /api/v1/device/led/off - Tắt LED
+- GET /api/v1/device/state?deviceId=demo - Lấy trạng thái hiện tại
+- GET /api/v1/device/state/history?deviceId=demo&limit=50 - Lấy lịch sử
+
+6.5. Frontend Web (ReactJS)
+
+Bước 1: API Service (apiService.js)
+
+const API_BASE_URL = 'http://10.30.233.17:8080/api/v1';
+
+class ApiService {
+  // Đặt màu RGB
+  static async setLedRgb(r, g, b) {
+    const response = await fetch(
+      `${API_BASE_URL}/device/led/rgb?r=${r}&g=${g}&b=${b}`,
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+      }
+    );
+    
+    if (!response.ok) {
+      throw new Error('Failed to set LED RGB');
+    }
+    
+    return response.json();
+  }
+  
+  // Tắt LED
+  static async turnOffLed() {
+    const response = await fetch(`${API_BASE_URL}/device/led/off`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+    });
+    
+    if (!response.ok) {
+      throw new Error('Failed to turn off LED');
+    }
+    
+    return response.json();
+  }
+  
+  // Lấy trạng thái
+  static async getDeviceState(deviceId = 'demo') {
+    const response = await fetch(
+      `${API_BASE_URL}/device/state?deviceId=${deviceId}`
+    );
+    
+    if (!response.ok) {
+      throw new Error('Failed to get device state');
+    }
+    
+    return response.json();
+  }
+}
+
+fetch(): API trình duyệt để gọi HTTP request
+async/await: Xử lý bất đồng bộ
+method: 'POST': Chỉ định HTTP method
+headers: Thiết lập Content-Type
+response.ok: Kiểm tra status code (200-299)
+response.json(): Parse JSON response
+
+Bước 2: Component điều khiển (DeviceControls.jsx)
+
+export default function DeviceControls({ mqttClient, isConnected }) {
+  const [lightOn, setLightOn] = useState(false);
+  const [rgbValues, setRgbValues] = useState({ r: 0, g: 0, b: 0 });
+
+  // Gửi lệnh qua MQTT
+  const publishCommand = (command) => {
+    if (!mqttClient || !isConnected) {
+      alert('⚠️ Not connected to MQTT broker');
+      return false;
+    }
+
+    const topic = 'iot/demo/device/cmd';
+    const message = JSON.stringify(command);
+    
+    mqttClient.publish(topic, message, { qos: 0 }, (err) => {
+      if (err) {
+        console.error('❌ Publish error:', err);
+      } else {
+        console.log('✅ Command sent');
+      }
+    });
+  };
+
+  // Bật/tắt đèn
+  const toggleLight = () => {
+    const newState = !lightOn;
+    setLightOn(newState);
+    publishCommand({ light: newState ? 'on' : 'off' });
+  };
+
+  // Thay đổi màu RGB
+  const updateRGB = (color, value) => {
+    const newRgb = { ...rgbValues, [color]: parseInt(value) };
+    setRgbValues(newRgb);
+    publishCommand({ led_rgb: [newRgb.r, newRgb.g, newRgb.b] });
+  };
+
+  // Đặt màu preset
+  const setPresetColor = (r, g, b) => {
+    setRgbValues({ r, g, b });
+    publishCommand({ led_rgb: [r, g, b] });
+  };
+
+  // Lắng nghe trạng thái từ ESP32
+  useEffect(() => {
+    if (!mqttClient) return;
+
+    const handleMessage = (topic, message) => {
+      if (topic === 'iot/demo/device/state') {
+        const data = JSON.parse(message.toString());
+        
+        if (data.light !== undefined) {
+          setLightOn(data.light === 'on');
+        }
+        
+        if (data.led_rgb && Array.isArray(data.led_rgb)) {
+          setRgbValues({
+            r: data.led_rgb[0],
+            g: data.led_rgb[1],
+            b: data.led_rgb[2]
+          });
+        }
+      }
+    };
+
+    mqttClient.on('message', handleMessage);
+    
+    return () => {
+      mqttClient.removeListener('message', handleMessage);
+    };
+  }, [mqttClient]);
+
+  return (
+    <div>
+      {/* Light On/Off Switch */}
+      <button onClick={toggleLight}>
+        {lightOn ? 'Turn OFF' : 'Turn ON'}
+      </button>
+      
+      {/* RGB Sliders */}
+      <input type="range" min="0" max="255" value={rgbValues.r}
+        onChange={(e) => updateRGB('r', e.target.value)} />
+      <input type="range" min="0" max="255" value={rgbValues.g}
+        onChange={(e) => updateRGB('g', e.target.value)} />
+      <input type="range" min="0" max="255" value={rgbValues.b}
+        onChange={(e) => updateRGB('b', e.target.value)} />
+      
+      {/* Color Presets */}
+      <button onClick={() => setPresetColor(255, 0, 0)}>Red</button>
+      <button onClick={() => setPresetColor(0, 255, 0)}>Green</button>
+      <button onClick={() => setPresetColor(0, 0, 255)}>Blue</button>
+    </div>
+  );
+}
+
+useState(): React hook quản lý state
+useEffect(): React hook xử lý side effects
+mqttClient.publish(): Gửi message qua MQTT
+mqttClient.on('message'): Lắng nghe message từ broker
+JSON.parse(): Parse JSON string thành object
+JSON.stringify(): Chuyển object thành JSON string
+Spread operator (...): Sao chép object và cập nhật 1 thuộc tính
+parseInt(): Chuyển string thành số nguyên
+
+6.6. Frontend Mobile (Flutter)
+
+Bước 1: MQTT Service (mqtt_service.dart)
+
+class MqttService {
+  MqttClient? _client;
+  
+  Future<void> connect({required String broker, required int port}) async {
+    _client = MqttServerClient.withPort(broker, 'flutter_client', port);
+    _client!.keepAlivePeriod = 60;
+    _client!.autoReconnect = true;
+    
+    final connMessage = MqttConnectMessage()
+        .withClientIdentifier('flutter_iot_${DateTime.now().millisecondsSinceEpoch}')
+        .startClean()
+        .withWillQos(MqttQos.atMostOnce);
+    
+    _client!.connectionMessage = connMessage;
+    
+    await _client!.connect();
+    
+    if (_client!.connectionStatus!.state == MqttConnectionState.connected) {
+      _client!.subscribe('iot/demo/device/state', MqttQos.atMostOnce);
+      
+      _client!.updates!.listen((List<MqttReceivedMessage<MqttMessage>> messages) {
+        final msg = messages[0].payload as MqttPublishMessage;
+        final payload = MqttPublishPayload.bytesToStringAsString(msg.payload.message);
+        
+        // Parse JSON và emit stream
+        final data = jsonDecode(payload);
+        _stateController.add(data);
+      });
+    }
+  }
+  
+  void publishCommand(Map<String, dynamic> command) {
+    final builder = MqttClientPayloadBuilder();
+    builder.addString(jsonEncode(command));
+    
+    _client!.publishMessage(
+      'iot/demo/device/cmd',
+      MqttQos.atMostOnce,
+      builder.payload!,
+    );
+  }
+}
+
+MqttServerClient: MQTT client cho Flutter
+withPort(): Tạo client với broker và port
+keepAlivePeriod: Thời gian giữ kết nối (60s)
+autoReconnect: Tự động kết nối lại
+MqttConnectMessage: Message khi kết nối
+subscribe(): Đăng ký nhận message từ topic
+updates.listen(): Lắng nghe message mới
+MqttClientPayloadBuilder: Xây dựng payload
+publishMessage(): Gửi message lên topic
+jsonEncode/jsonDecode: Chuyển đổi JSON
+
+Bước 2: LED Control Screen (led_control_screen.dart)
+
+class _LedControlScreenState extends State<LedControlScreen> {
+  final MqttService _mqttService = MqttService();
+  bool _isConnected = false;
+  bool _lightOn = false;
+  double _redValue = 0;
+  double _greenValue = 0;
+  double _blueValue = 0;
+
+  @override
+  void initState() {
+    super.initState();
+    
+    if (kIsWeb) {
+      // Trên Web: Sử dụng REST API
+      _startApiPolling();
+    } else {
+      // Trên Mobile: Sử dụng MQTT
+      _connectToMqtt();
+      
+      _stateSub = _mqttService.stateStream.listen((data) {
+        if (data['led_rgb'] != null) {
+          final rgb = data['led_rgb'] as List;
+          setState(() {
+            _redValue = rgb[0].toDouble();
+            _greenValue = rgb[1].toDouble();
+            _blueValue = rgb[2].toDouble();
+          });
+        }
+        
+        if (data['light'] != null) {
+          setState(() {
+            _lightOn = data['light'] == 'on';
+          });
+        }
+      });
+    }
+  }
+
+  void _toggleLight() {
+    setState(() {
+      _lightOn = !_lightOn;
+    });
+    
+    if (kIsWeb) {
+      ApiService.setLedRgb(255, 255, 255); // REST API
+    } else {
+      _mqttService.publishCommand({'light': _lightOn ? 'on' : 'off'}); // MQTT
+    }
+  }
+
+  void _updateRGB() {
+    if (kIsWeb) {
+      ApiService.setLedRgb(
+        _redValue.toInt(),
+        _greenValue.toInt(),
+        _blueValue.toInt(),
+      );
+    } else {
+      _mqttService.publishCommand({
+        'led_rgb': [_redValue.toInt(), _greenValue.toInt(), _blueValue.toInt()],
+      });
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      body: Column(
+        children: [
+          // Light Switch
+          Switch(
+            value: _lightOn,
+            onChanged: (value) => _toggleLight(),
+          ),
+          
+          // RGB Sliders
+          Slider(
+            min: 0, max: 255,
+            value: _redValue,
+            onChanged: (value) {
+              setState(() => _redValue = value);
+              _updateRGB();
+            },
+          ),
+          // Green & Blue sliders tương tự
+        ],
+      ),
+    );
+  }
+}
+
+StatefulWidget: Widget có state thay đổi
+setState(): Cập nhật state và rebuild UI
+initState(): Khởi tạo state
+kIsWeb: Kiểm tra đang chạy trên Web hay Mobile
+Stream.listen(): Lắng nghe stream events
+Slider: Widget thanh trượt
+Switch: Widget công tắc bật/tắt
+toInt()/toDouble(): Chuyển đổi kiểu dữ liệu
+
+6.7. Testing và Debugging
+
+Bước 1: Test với MQTTX
+
+1. Kết nối đến broker: 10.30.233.17:1883
+2. Subscribe topic: iot/demo/#
+3. Publish test command:
+   - Topic: iot/demo/device/cmd
+   - Payload: {"led_rgb": [255, 0, 0]}
+4. Kiểm tra ESP32 phản hồi trên topic: iot/demo/device/state
+
+Bước 2: Test với cURL
+
+# Đặt LED màu đỏ
+curl -X POST "http://10.30.233.17:8080/api/v1/device/led/rgb?r=255&g=0&b=0"
+
+# Tắt LED
+curl -X POST "http://10.30.233.17:8080/api/v1/device/led/off"
+
+# Lấy trạng thái
+curl "http://10.30.233.17:8080/api/v1/device/state?deviceId=demo"
+
+Bước 3: Kiểm tra Serial Monitor ESP32
+
+- Mở Serial Monitor (115200 baud)
+- Kiểm tra log kết nối WiFi
+- Kiểm tra log kết nối MQTT
+- Kiểm tra message nhận được
+- Kiểm tra message publish
+
+Bước 4: Kiểm tra Database
+
+SELECT * FROM device_state ORDER BY timestamp DESC LIMIT 10;
+SELECT * FROM sensor_data WHERE topic LIKE '%device/state%' LIMIT 10;
+
+6.8. Tổng kết
+
+Hệ thống điều khiển đèn LED RGB hoàn chỉnh với các tính năng:
+
+1. Điều khiển bật/tắt đèn
+2. Thay đổi màu RGB (0-255 cho mỗi kênh)
+3. Màu preset (Đỏ, Xanh lá, Xanh dương, vàng, tím, cam,...)
+4. Real-time update trạng thái
+5. Lưu lịch sử vào database
+6. Hỗ trợ nhiều platform (Web, Mobile)
+7. REST API và MQTT protocol
+8. Auto-reconnect khi mất kết nối
+
+Công nghệ sử dụng:
+- ESP32: C++ với Arduino framework
+- Backend: Java Spring Boot + Eclipse Paho MQTT
+- Database: MySQL
+- Web: ReactJS + MQTT.js
+- Mobile: Flutter + MQTT Client
+- Broker: Mosquitto MQTT
+
+Ưu điểm:
+- Real-time communication qua MQTT
+- Scalable architecture
+- Cross-platform support
+- RESTful API cho integration
+- Database persistence
+- Auto-reconnect mechanism
+
+Ứng dụng thực tế:
+- Smart home lighting
+- RGB mood lighting
+- IoT demo projects
+- Remote device control
+- Home automation systems

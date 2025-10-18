@@ -1,6 +1,7 @@
 package com.nguyenanhtu.example301;
 
 import java.io.IOException;
+import java.util.UUID;
 import org.eclipse.paho.client.mqttv3.IMqttDeliveryToken;
 import org.eclipse.paho.client.mqttv3.MqttCallback;
 import org.eclipse.paho.client.mqttv3.MqttException;
@@ -19,7 +20,8 @@ public class Main {
 
         try {
             // Tạo MQTT client
-            MqttClient mqttClient = new MqttClient(mqttBroker, "mqttClient");
+            String runtimeClientId = "mqttClient-" + UUID.randomUUID();
+            MqttClient mqttClient = new MqttClient(mqttBroker, runtimeClientId);
             
             // Cấu hình thông tin đăng nhập
             MqttConnectOptions mqttOptions = new MqttConnectOptions();
@@ -36,7 +38,12 @@ public class Main {
             mqttClient.setCallback(new MqttCallback() {
                 @Override
                 public void messageArrived(String topic, MqttMessage message) {
-                    System.out.println("Received message: " + new String(message.getPayload()));
+                    byte[] payload = message != null ? message.getPayload() : null;
+                    if (payload == null || payload.length == 0) {
+                        System.out.println("Received empty message on topic: " + topic);
+                    } else {
+                        System.out.println("Received message on topic [" + topic + "]: " + new String(payload));
+                    }
                 }
 
                 @Override

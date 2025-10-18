@@ -9,7 +9,7 @@
 #include "DHT22.h"
 void DHT_task(void *pvParameter)
 {
-setDHTgpio(4);
+setDHTgpio(5);
 printf("Starting DHT Task\n\n");
 while (1)
 {

@@ -1,0 +1,360 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>IoT Control Panel</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        h1 {
+            color: white;
+            text-align: center;
+            margin-bottom: 30px;
+            font-size: 2.5em;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+        
+        .panel {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            margin-bottom: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+        }
+        
+        h2 {
+            color: #667eea;
+            margin-bottom: 20px;
+            border-bottom: 2px solid #667eea;
+            padding-bottom: 10px;
+        }
+        
+        .color-buttons {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .btn {
+            padding: 15px 25px;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(0,0,0,0.2);
+        }
+        
+        .btn:active {
+            transform: translateY(0);
+        }
+        
+        .btn-red { background: #ef4444; color: white; }
+        .btn-green { background: #10b981; color: white; }
+        .btn-blue { background: #3b82f6; color: white; }
+        .btn-yellow { background: #fbbf24; color: white; }
+        .btn-purple { background: #8b5cf6; color: white; }
+        .btn-cyan { background: #06b6d4; color: white; }
+        .btn-white { background: #ffffff; color: #333; border: 2px solid #ddd; }
+        .btn-off { background: #374151; color: white; }
+        
+        .custom-control {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+            margin-top: 20px;
+            flex-wrap: wrap;
+        }
+        
+        .color-input {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+        
+        input[type="number"] {
+            width: 80px;
+            padding: 10px;
+            border: 2px solid #ddd;
+            border-radius: 5px;
+            font-size: 16px;
+        }
+        
+        input[type="color"] {
+            width: 60px;
+            height: 45px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        
+        .btn-custom {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        
+        #status {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            margin-top: 20px;
+        }
+        
+        .status-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px;
+            margin: 5px 0;
+            background: #f3f4f6;
+            border-radius: 5px;
+        }
+        
+        .color-preview {
+            width: 100%;
+            height: 100px;
+            border-radius: 10px;
+            margin: 20px 0;
+            border: 3px solid #ddd;
+            transition: all 0.3s ease;
+        }
+        
+        #response {
+            margin-top: 20px;
+            padding: 15px;
+            background: #f9fafb;
+            border-radius: 8px;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        
+        .log-entry {
+            padding: 5px;
+            margin: 3px 0;
+            border-left: 3px solid #667eea;
+            padding-left: 10px;
+        }
+        
+        .log-success { border-left-color: #10b981; }
+        .log-error { border-left-color: #ef4444; color: #ef4444; }
+        
+        .config {
+            background: #f3f4f6;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+        
+        .config input {
+            width: 100%;
+            padding: 8px;
+            margin-top: 5px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎨 IoT LED Control Panel</h1>
+        
+        <div class="panel">
+            <h2>⚙️ Cấu hình</h2>
+            <div class="config">
+                <label>
+                    <strong>API Base URL:</strong>
+                    <input type="text" id="apiUrl" value="http://localhost:8080/api/v1">
+                </label>
+            </div>
+        </div>
+        
+        <div class="panel">
+            <h2>🎨 Màu sắc cố định</h2>
+            <div class="color-buttons">
+                <button class="btn btn-red" onclick="setColor(255, 0, 0)">🔴 Đỏ</button>
+                <button class="btn btn-green" onclick="setColor(0, 255, 0)">🟢 Xanh lá</button>
+                <button class="btn btn-blue" onclick="setColor(0, 0, 255)">🔵 Xanh dương</button>
+                <button class="btn btn-yellow" onclick="setColor(255, 255, 0)">🟡 Vàng</button>
+                <button class="btn btn-purple" onclick="setColor(128, 0, 128)">🟣 Tím</button>
+                <button class="btn btn-cyan" onclick="setColor(0, 255, 255)">💠 Cyan</button>
+                <button class="btn btn-white" onclick="setColor(255, 255, 255)">⚪ Trắng</button>
+                <button class="btn btn-off" onclick="turnOff()">⚫ Tắt</button>
+            </div>
+        </div>
+        
+        <div class="panel">
+            <h2>🎛️ Điều khiển tùy chỉnh</h2>
+            <div class="custom-control">
+                <div class="color-input">
+                    <label>R: <input type="number" id="red" min="0" max="255" value="0"></label>
+                    <label>G: <input type="number" id="green" min="0" max="255" value="0"></label>
+                    <label>B: <input type="number" id="blue" min="0" max="255" value="0"></label>
+                </div>
+                <input type="color" id="colorPicker" value="#000000" onchange="updateFromColorPicker()">
+                <button class="btn btn-custom" onclick="setCustomColor()">Áp dụng màu</button>
+            </div>
+            <div class="color-preview" id="colorPreview"></div>
+        </div>
+        
+        <div class="panel">
+            <h2>📊 Trạng thái thiết bị</h2>
+            <button class="btn btn-custom" onclick="getDeviceState()" style="margin-bottom: 15px;">
+                🔄 Làm mới trạng thái
+            </button>
+            <div id="status">
+                <div class="status-item">
+                    <span><strong>LED RGB:</strong></span>
+                    <span id="currentRgb">-</span>
+                </div>
+                <div class="status-item">
+                    <span><strong>Thời gian:</strong></span>
+                    <span id="timestamp">-</span>
+                </div>
+            </div>
+        </div>
+        
+        <div class="panel">
+            <h2>📝 Nhật ký hoạt động</h2>
+            <div id="response"></div>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE = () => document.getElementById('apiUrl').value;
+        
+        function log(message, isError = false) {
+            const responseDiv = document.getElementById('response');
+            const time = new Date().toLocaleTimeString();
+            const logClass = isError ? 'log-entry log-error' : 'log-entry log-success';
+            responseDiv.innerHTML = `<div class="${logClass}">[${time}] ${message}</div>` + responseDiv.innerHTML;
+        }
+        
+        async function setColor(r, g, b) {
+            try {
+                const url = `${API_BASE()}/device/led/rgb?r=${r}&g=${g}&b=${b}`;
+                const response = await fetch(url, { method: 'POST' });
+                const data = await response.json();
+                
+                if (response.ok) {
+                    log(`✅ Đã đặt LED màu RGB(${r}, ${g}, ${b})`);
+                    updatePreview(r, g, b);
+                    setTimeout(getDeviceState, 500);
+                } else {
+                    log(`❌ Lỗi: ${JSON.stringify(data)}`, true);
+                }
+            } catch (error) {
+                log(`❌ Lỗi kết nối: ${error.message}`, true);
+            }
+        }
+        
+        async function turnOff() {
+            try {
+                const url = `${API_BASE()}/device/led/off`;
+                const response = await fetch(url, { method: 'POST' });
+                const data = await response.json();
+                
+                if (response.ok) {
+                    log('✅ Đã tắt LED');
+                    updatePreview(0, 0, 0);
+                    setTimeout(getDeviceState, 500);
+                } else {
+                    log(`❌ Lỗi: ${JSON.stringify(data)}`, true);
+                }
+            } catch (error) {
+                log(`❌ Lỗi kết nối: ${error.message}`, true);
+            }
+        }
+        
+        function setCustomColor() {
+            const r = parseInt(document.getElementById('red').value) || 0;
+            const g = parseInt(document.getElementById('green').value) || 0;
+            const b = parseInt(document.getElementById('blue').value) || 0;
+            setColor(r, g, b);
+        }
+        
+        function updateFromColorPicker() {
+            const color = document.getElementById('colorPicker').value;
+            const r = parseInt(color.substr(1, 2), 16);
+            const g = parseInt(color.substr(3, 2), 16);
+            const b = parseInt(color.substr(5, 2), 16);
+            
+            document.getElementById('red').value = r;
+            document.getElementById('green').value = g;
+            document.getElementById('blue').value = b;
+            updatePreview(r, g, b);
+        }
+        
+        function updatePreview(r, g, b) {
+            const preview = document.getElementById('colorPreview');
+            preview.style.backgroundColor = `rgb(${r}, ${g}, ${b})`;
+            
+            // Update color picker
+            const hex = '#' + [r, g, b].map(x => {
+                const h = x.toString(16);
+                return h.length === 1 ? '0' + h : h;
+            }).join('');
+            document.getElementById('colorPicker').value = hex;
+        }
+        
+        async function getDeviceState() {
+            try {
+                const url = `${API_BASE()}/device/state?deviceId=demo`;
+                const response = await fetch(url);
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    const [r, g, b] = data.ledRgb;
+                    
+                    document.getElementById('currentRgb').textContent = `RGB(${r}, ${g}, ${b})`;
+                    document.getElementById('timestamp').textContent = new Date(data.timestamp).toLocaleString('vi-VN');
+                    
+                    updatePreview(r, g, b);
+                    document.getElementById('red').value = r;
+                    document.getElementById('green').value = g;
+                    document.getElementById('blue').value = b;
+                    
+                    log(`📊 Đã cập nhật trạng thái: RGB(${r}, ${g}, ${b})`);
+                } else if (response.status === 404) {
+                    log('⚠️ Chưa có dữ liệu trạng thái thiết bị', true);
+                } else {
+                    log(`❌ Lỗi khi lấy trạng thái: ${response.status}`, true);
+                }
+            } catch (error) {
+                log(`❌ Lỗi kết nối: ${error.message}`, true);
+            }
+        }
+        
+        // Auto-update device state every 5 seconds
+        setInterval(getDeviceState, 5000);
+        
+        // Initial load
+        getDeviceState();
+        log('🚀 Ứng dụng đã sẵn sàng!');
+    </script>
+</body>
+</html>
